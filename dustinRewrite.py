@@ -51,6 +51,7 @@ def updateProcess(mainDir):
 			up.qsysFiles = []
 			up.qsysFlag = False
 			up.blanketUpGrade = False
+			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]
 			
 			up.classMain()
 			
@@ -399,9 +400,10 @@ def updateProcess(mainDir):
 		
 		def checkForReadMe(up):
 			logging.debug("def: checkForReadMe")
-			for textFiles in up.findAllFilesOfType("txt"):
-				up.fileList.append(textFiles)
-		
+			for fileType in up.nonQuartusFileList:
+				for textFiles in up.findAllFilesOfType(fileType):
+					up.fileList.append(textFiles)
+			
 		def checkFileList(up):
 			logging.debug("def: checkFileList")
 			for line in up.fileList:
