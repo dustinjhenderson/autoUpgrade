@@ -52,6 +52,7 @@ def updateProcess(mainDir):
 			up.qsysFlag = False
 			up.blanketUpGrade = False
 			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]
+			up.masterImageFileTypes = ["sof", "pof", "elf", "iso"] #add hex files for memeory configuration
 			
 			up.classMain()
 			
@@ -236,15 +237,10 @@ def updateProcess(mainDir):
 		
 		def findMasterImage(up):
 			logging.debug("def: findMasterImage")
-			for fileFound in up.findAllFilesOfType("sof"):
-				up.fileList.append(fileFound)
-			for fileFound in up.findAllFilesOfType("pof"):
-				up.fileList.append(fileFound)
-			for fileFound in up.findAllFilesOfType("elf"):
-				up.fileList.append(fileFound)
-			for fileFound in up.findAllFilesOfType("iso"):
-				up.fileList.append(fileFound)
-		
+			for fileType in up.masterImageFileTypes:
+				for fileFound in up.findAllFilesOfType(fileType):
+					up.fileList.append(fileFound)
+			
 		def upgradeIp(up):
 			logging.debug("def: upgradeIp")
 			try:
