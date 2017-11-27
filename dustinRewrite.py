@@ -32,7 +32,7 @@ def updateProcess(mainDir):
 			up.extracParCommand = "qextract"
 			up.cmdOut = ""
 			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "
-			up.fileList = ['platform_setup.tcl']
+			up.fileList = ['platform_setup.tcl', 'filelist.txt']
 			up.qsfFile = ''
 			up.qpfFileName = "top"
 			up.qsfFileName = ""
@@ -54,7 +54,17 @@ def updateProcess(mainDir):
 			
 			up.classMain()
 			
-			
+		'''
+		* def name:			classMain
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def is the main for the upgrade class
+		* 
+		* dependantcies:	This def is only dependant on the class exsisting and all varibles 
+		*					in the classe beeing initialised. Also this def should be called 
+		*					at the end of the init in the class.
+		'''
 		def classMain(up):
 			up.checkDir()
 			up.genDirectoryList()
@@ -90,6 +100,7 @@ def updateProcess(mainDir):
 			up.findMasterImage()
 			up.parsQips()
 			up.individualFileUpgrade()
+			up.checkForReadMe()
 			up.checkFileList()
 			up.generateFileList()
 			up.archive()
@@ -103,9 +114,12 @@ def updateProcess(mainDir):
 		
 		'''
 		* def name:			checkDir
+		* 
 		* creator:			Dustin Henderson
+		* 
 		* description:		This def checks that the entered directory exsists and is not a specific file
-		* dependantcies:	
+		* 
+		* dependantcies:	up.mainDir is populated with the file path the user intends to use.
 		'''
 		def checkDir(up):
 			logging.debug("def: checkDir")
@@ -122,6 +136,15 @@ def updateProcess(mainDir):
 			logging.debug("good directory")
 			up.lastSuc = True
 		
+		'''
+		* def name:			genDirectoryList
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def creates a list of all sub directories in the mainDir if there are any
+		* 
+		* dependantcies:	up.mainDir is populated with the file path the user intends to use.
+		'''
 		def genDirectoryList(up):
 			logging.debug("def: genDirectoryList")
 			for x in os.listdir('.'):
@@ -145,7 +168,7 @@ def updateProcess(mainDir):
 				up.projName = projectList[0]
 		
 		'''
-		pulled from the original script
+		* pulled from the original script
 		'''
 		def findAllFilesOfType(up, fileExt): #pulled from original script
 			logging.debug("def: findAllFilesOfType")
@@ -172,6 +195,17 @@ def updateProcess(mainDir):
 						fileList.append(os.path.normpath(filepath))
 			return fileList
 		
+		'''
+		* def name:			extractPar
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		this def extracts the .par file that comes from the design store. The project
+		*					extracted from the par file will always be named top. Before the project extracts
+		*					the par it moves to the mainDir location.
+		* 
+		* dependantcies:	mainDir must be a valid directory containing a par file. 
+		'''
 		def extractPar(up):
 			logging.debug("def: extractPar")
 			logging.debug("Changing directory to " + mainDir)
@@ -363,7 +397,13 @@ def updateProcess(mainDir):
 					print "Failed to find IP file in the directory"
 					logging.debug("Failed to find IP file in the directory")
 		
+		def checkForReadMe(up):
+			logging.debug("def: checkForReadMe")
+			for textFiles in up.findAllFilesOfType("txt"):
+				up.fileList.append(textFiles)
+		
 		def checkFileList(up):
+			logging.debug("def: checkFileList")
 			for line in up.fileList:
 				for exclude in up.excludeDictionary:
 					if(exclude in line):
