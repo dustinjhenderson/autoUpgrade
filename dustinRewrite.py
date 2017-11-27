@@ -402,6 +402,7 @@ def updateProcess(mainDir):
 			
 		def checkFileList(up):
 			logging.debug("def: checkFileList")
+			up.fileList = list(set(up.fileList))
 			for line in up.fileList:
 				for exclude in up.excludeDictionary:
 					if(exclude in line):
