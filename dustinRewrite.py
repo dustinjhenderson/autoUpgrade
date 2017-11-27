@@ -402,7 +402,7 @@ def updateProcess(mainDir):
 			
 		def checkFileList(up):
 			logging.debug("def: checkFileList")
-			up.fileList = list(set(up.fileList))
+			up.fileList = list(set(up.fileList)) #remove duplicate files in file list
 			for line in up.fileList:
 				for exclude in up.excludeDictionary:
 					if(exclude in line):
