@@ -1,6 +1,6 @@
 #design store script rewrite
 print "importing libraries"
-#checking to see if the branch worked
+
 import subprocess
 import logging
 import logging.config
@@ -87,6 +87,7 @@ def updateProcess(mainDir):
 			up.createPlatformSetUpFile()
 			up.closeQsfFile()
 			up.findQsysFiles()
+			up.findMasterImage()
 			up.parsQips()
 			up.individualFileUpgrade()
 			up.checkFileList()
@@ -99,7 +100,13 @@ def updateProcess(mainDir):
 			up.extractArchiveFile()
 			up.compileProject() 
 			print "DONE"
-			
+		
+		'''
+		* def name:			checkDir
+		* creator:			Dustin Henderson
+		* description:		This def checks that the entered directory exsists and is not a specific file
+		* dependantcies:	
+		'''
 		def checkDir(up):
 			logging.debug("def: checkDir")
 			if(os.path.isdir(up.mainDir) == False):
@@ -137,6 +144,9 @@ def updateProcess(mainDir):
 				up.foundQpf = True
 				up.projName = projectList[0]
 		
+		'''
+		pulled from the original script
+		'''
 		def findAllFilesOfType(up, fileExt): #pulled from original script
 			logging.debug("def: findAllFilesOfType")
 			"""
@@ -186,7 +196,20 @@ def updateProcess(mainDir):
 			if(len(up.qsysFiles) != 0):
 				logging.debug("found qsys")
 				up.qsysFlag = True
-			
+				for files in up.qsysFiles:
+					up.fileList.append(files)
+		
+		def findMasterImage(up):
+			logging.debug("def: findMasterImage")
+			for fileFound in up.findAllFilesOfType("sof"):
+				up.fileList.append(fileFound)
+			for fileFound in up.findAllFilesOfType("pof"):
+				up.fileList.append(fileFound)
+			for fileFound in up.findAllFilesOfType("elf"):
+				up.fileList.append(fileFound)
+			for fileFound in up.findAllFilesOfType("iso"):
+				up.fileList.append(fileFound)
+		
 		def upgradeIp(up):
 			logging.debug("def: upgradeIp")
 			try:
@@ -350,7 +373,6 @@ def updateProcess(mainDir):
 			logging.debug("def: generateFileList")
 			file = open("filelist.txt", "w")
 			for line in up.fileList:
-				
 				file.write(line + '\n')
 			file.close()
 	
