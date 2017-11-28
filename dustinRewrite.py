@@ -86,7 +86,7 @@ def updateProcess(mainDir):
 			if(up.lastSuc == False):
 				return
 			up.lastSuc == False
-			print "upgrading IP (this may take a while)"
+			print "upgrading IP the easy way (this may take a while)"
 			up.upgradeIp()
 			print "building file list"
 			up.lastSuc = False
@@ -107,7 +107,8 @@ def updateProcess(mainDir):
 			up.parsQips()
 			if(up.lastSuc == False):
 				return
-			up.individualFileUpgrade()
+			if(up.blanketUpGrade == False):
+				up.individualFileUpgrade()
 			up.checkForReadMe()
 			up.checkFileList()
 			up.generateFileList()
@@ -253,10 +254,11 @@ def updateProcess(mainDir):
 				up.cmdOut = subprocess.check_output((up.updateIpCommand + up.qpfFileName), shell=True)
 				logging.debug("updated IP successfully")
 				print "pdated IP successfully"
+				up.blanketUpGrade = True
 			except subprocess.CalledProcessError as testExcept:
 				logging.debug("error upgrading IP with blanket statement will try individual files")
 				logging.debug("error message: " + str(testExcept))
-				blanketUpGrade = False
+				up.blanketUpGrade = False
 		
 		def openQsfFile(up):
 			logging.debug("def: openQsfFile")
@@ -362,7 +364,7 @@ def updateProcess(mainDir):
 					line = re.sub('\n', '', line)
 			return line
 		
-		def individualFileUpgrade(up): #add a try here?
+		def individualFileUpgrade(up): #no try needed here
 			updateCommand = ""
 			logging.debug("def: individualFileUpgrade")
 			logging.debug("qsysGlag status: " + str(up.qsysFlag))
