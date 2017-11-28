@@ -294,9 +294,11 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def is used to attempt a blanket ip upgrade of the project. The command works about
+		*					60% of the time. If it works it is really easy to skip the one by one upgrade. 
 		* 
-		* dependantcies:	
+		* dependantcies:	The command for this def is sotred in the initial as up.updateIpCommand. It's initialised
+		*					there for easy future editing.
 		'''		
 		def upgradeIp(up):
 			logging.debug("def: upgradeIp")
@@ -310,6 +312,16 @@ def updateProcess(mainDir):
 				logging.debug("error message: " + str(testExcept))
 				up.blanketUpGrade = False
 		
+		'''
+		* def name:			openQsfFile
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def opens the qsf file inorder for it to be parced. If it fails to open for any reason
+		*					it will set the up.lastSuc to false
+		*
+		* dependantcies:	up.lastsuc is a bool used to indicate failur to open the file
+		'''	
 		def openQsfFile(up):
 			logging.debug("def: openQsfFile")
 			try: 
@@ -323,6 +335,7 @@ def updateProcess(mainDir):
 				print "failed to open qsf file"
 				up.lastSuc = False
 				
+		
 		def createPlatformSetUpFile(up):
 			logging.debug("def: createPlatformSetUpFile")
 			file = open('platform_setup.tcl', 'w')
