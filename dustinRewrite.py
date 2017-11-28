@@ -95,12 +95,18 @@ def updateProcess(mainDir):
 				return
 			up.parsQsf()
 			up.closeQsfFile()
+			up.lastSuc = False
 			up.openQsfFile()
+			if(up.lastSuc == False):
+				return
 			up.createPlatformSetUpFile()
 			up.closeQsfFile()
 			up.findQsysFiles()
 			up.findMasterImage()
+			up.lastSuc = False
 			up.parsQips()
+			if(up.lastSuc == False):
+				return
 			up.individualFileUpgrade()
 			up.checkForReadMe()
 			up.checkFileList()
@@ -313,8 +319,10 @@ def updateProcess(mainDir):
 					up.readQip(file)
 					logging.debug('closing qip file')
 					file.close()
+					up.lastSuc = True
 				except:
-					logging.debug("failed to open file")
+					logging.debug("failed to open qip file")
+					up.lastSuc = False
 		
 		def parsQuipParent(up, file):
 			print os.path.dirname(file) + '/'
@@ -354,7 +362,7 @@ def updateProcess(mainDir):
 					line = re.sub('\n', '', line)
 			return line
 		
-		def individualFileUpgrade(up):
+		def individualFileUpgrade(up): #add a try here?
 			updateCommand = ""
 			logging.debug("def: individualFileUpgrade")
 			logging.debug("qsysGlag status: " + str(up.qsysFlag))
