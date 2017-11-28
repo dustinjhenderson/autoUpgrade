@@ -335,7 +335,18 @@ def updateProcess(mainDir):
 				print "failed to open qsf file"
 				up.lastSuc = False
 				
-		
+		'''
+		* def name:			createPlatformSetUpFile
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def uses the open qsf file and copies the contence into the platform_setup tcl file
+		*					the def also adds proc ::setup_project{}{ to the beginning of the file and the closing }
+		*					at the end of the file.
+		*
+		* dependantcies:	This module depends on the up.qsfFile = open(qsfFile r) being exicuted starting at the 
+		*					beginning of the file
+		'''	
 		def createPlatformSetUpFile(up):
 			logging.debug("def: createPlatformSetUpFile")
 			file = open('platform_setup.tcl', 'w')
@@ -344,7 +355,21 @@ def updateProcess(mainDir):
 				file.write(line)
 			file.write('\n}')
 			file.close()
-				
+		
+		'''
+		* def name:			parsQsf
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This module is responcable for finding any files used by the project and appending them
+		*					to the project files list. It works by reading the tcl syntax in the qsf file. In the 
+		*					init of the class there is a dictionary of filetypes the parser looks for. This dictionary
+		*					is used to identify qip, verilog, vhdl, and ect files that need to be included in the filelist.
+		*
+		* dependantcies:	The initial of the class needs to include a dictionary pre populated with the file types the
+		*					parser needs to Identify. Additionally, parsFileNameFromQip def needs to exsist and return
+		*					the file location and name when the tcl line is passed into it.
+		'''	
 		def parsQsf(up):
 			logging.debug("def: parsQsf")
 			for line in up.qsfFile:
@@ -358,6 +383,18 @@ def updateProcess(mainDir):
 							up.qipList.append(line)
 						logging.debug("found file: " + line)
 				
+		'''
+		* def name:			parsFileNameFromQsf
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def parses the location and name from a line of tcl code in the qsf file. The def
+		*					can only accept one line of code at a time.
+		*
+		* dependantcies:	Only one line of tcl code at a time (passed in as a string) as line. fileType needs to be
+		*					passed in. The file type is the syntax used by tcl to identify the type of file. For example
+		*					a verilog file is denoted with "VERILOG_FILE".
+		'''	
 		def parsFileNameFromQsf(up, fileType, line):
 			logging.debug("def: parsFileNameFromQsf")
 			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line)
