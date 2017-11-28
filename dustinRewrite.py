@@ -29,7 +29,7 @@ def updateProcess(mainDir):
 			up.foundQpf = False
 			up.foundPar = False
 			up.projName = ""
-			up.extracParCommand = "qextract"
+			up.extracParCommand = "quartus_sh --platform_install -package audio_monitor.par; quartus_sh --platform -name audio_monitor -search_path \."
 			up.cmdOut = ""
 			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "
 			up.fileList = ['platform_setup.tcl', 'filelist.txt']
@@ -117,11 +117,11 @@ def updateProcess(mainDir):
 				return
 			up.lastSuc = False
 			up.archive()
-			if(up.lastSuc == False)
+			if(up.lastSuc == False):
 				return
 			up.lastSuc = False
 			up.createTestDirectory()
-			if(up.lastSuc == False)
+			if(up.lastSuc == False):
 				return
 			up.copyArchive()
 			logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
