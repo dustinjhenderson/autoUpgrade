@@ -247,6 +247,19 @@ def updateProcess(mainDir):
 				logging.debug("error message: " + str(testExcept))
 				up.lastSuc = False
 		
+		'''
+		* def name:			findQsysFiles
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def locates any qsys files in the mainDir. Additionally it sets a the qsysFlag 
+		*					to true if it finds them. This way later down the line in the single ip upgrade 
+		*					process the script will know to look for qsys files. This def will also append the
+		*					the qsys files too the up.filesList.
+		* 
+		* dependantcies:	up.mainDir is populated with the file path the user intends to use. The qsysFlag
+		*					needs to be initialised False. 
+		'''
 		def findQsysFiles(up):
 			logging.debug("def: findQsysFiles")
 			up.qsysFiles = up.findAllFilesOfType("qsys")
@@ -257,12 +270,34 @@ def updateProcess(mainDir):
 				for files in up.qsysFiles:
 					up.fileList.append(files)
 		
+		'''
+		* def name:			findMasterImage
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This Def is responcable for finding the master image files that are often included in 
+		*					design examples. It uses a list of file extentions to find completed synthsys files.
+		*					for example the most common master image file is an sof file. The file extentions are
+		*					listed at the top of the script in the initial block for easy editing.
+		* 
+		* dependantcies:	up.masterImageFileTypes needs to be an initialised list containing the file exensions
+		*					of any files that need to 
+		'''
 		def findMasterImage(up):
 			logging.debug("def: findMasterImage")
 			for fileType in up.masterImageFileTypes:
 				for fileFound in up.findAllFilesOfType(fileType):
 					up.fileList.append(fileFound)
-			
+		
+		'''
+		* def name:			upgradeIp
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''		
 		def upgradeIp(up):
 			logging.debug("def: upgradeIp")
 			try:
