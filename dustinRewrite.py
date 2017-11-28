@@ -29,7 +29,12 @@ def updateProcess(mainDir):
 			up.foundQpf = False
 			up.foundPar = False
 			up.projName = ""
-			up.extracParCommand = "quartus_sh --platform_install -package audio_monitor.par; quartus_sh --platform -name audio_monitor -search_path \."
+			#example qextract syntax
+			#"quartus_sh --platform_install -package audio_monitor.par; quartus_sh --platform -name audio_monitor -search_path \."
+			up.extracParCommand = "" # will get filled in when the name is detected
+			up.extracParCommand1 = "quartus_sh --platform_install -package " 
+			up.extracParCommand2 = "; quartus_sh --platform -name " 
+			up.extracParCommand3 = " -search_path \."
 			up.cmdOut = ""
 			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "
 			up.fileList = ['platform_setup.tcl', 'filelist.txt']
@@ -228,6 +233,7 @@ def updateProcess(mainDir):
 			logging.debug("def: extractPar")
 			logging.debug("Changing directory to " + mainDir)
 			os.chdir(mainDir)
+			up.extracParCommand = up.extracParCommand1+ up.projName + up.extracParCommand2 + re.sub('.par', '', up.projName) + up.extracParCommand3
 			logging.debug("comand: " + str(up.extracParCommand))
 			print "extracting par file"
 			try:
@@ -444,7 +450,7 @@ def updateProcess(mainDir):
 	
 		def archive(up):
 			logging.debug("def: archive")
-			logging.debug("comand: " + str(up.extracParCommand))
+			logging.debug("comand: " + str(up.archiveComand))
 			print "archiving project file"
 			try:
 				up.cmdOut = subprocess.check_output(up.archiveComand, shell=True)
