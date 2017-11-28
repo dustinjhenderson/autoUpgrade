@@ -111,9 +111,18 @@ def updateProcess(mainDir):
 				up.individualFileUpgrade()
 			up.checkForReadMe()
 			up.checkFileList()
+			up.lastSuc = False
 			up.generateFileList()
+			if(up.lastSuc == False):
+				return
+			up.lastSuc = False
 			up.archive()
+			if(up.lastSuc == False)
+				return
+			up.lastSuc = False
 			up.createTestDirectory()
+			if(up.lastSuc == False)
+				return
 			up.copyArchive()
 			logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
 			os.chdir(up.mainDir + '/' + up.testDirName)
@@ -420,10 +429,18 @@ def updateProcess(mainDir):
 		
 		def generateFileList(up):
 			logging.debug("def: generateFileList")
-			file = open("filelist.txt", "w")
-			for line in up.fileList:
-				file.write(line + '\n')
-			file.close()
+			try:
+				file = open("filelist.txt", "w")
+				for line in up.fileList:
+					file.write(line + '\n')
+				file.close()
+				logging.debug("successfully wrote filelist.txt")
+				print "successfully wrote filelist.txt"
+				up.lastSuc = True
+			except:
+				logging.debug("failed to write filelist.txt")
+				print "failed to write filelist.txt"
+				up.lastSuc = False
 	
 		def archive(up):
 			logging.debug("def: archive")
@@ -446,9 +463,11 @@ def updateProcess(mainDir):
 				print "creating test directory"
 				logging.debug("creating test directory")
 				os.mkdir(up.testDirName)
+				up.lastSuc = True
 			except:
 				print "Error failed to create test directory"
 				logging.debug("Error failed to create test directory")
+				up.lastSuc = False
 		
 		def copyArchive(up):
 			logging.debug("def: copyArchive")
