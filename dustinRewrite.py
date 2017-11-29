@@ -406,10 +406,29 @@ def updateProcess(mainDir):
 				line = re.sub('\n', '', line)
 			return line
 			
+		'''
+		* def name:			closeQsfFile
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		this module closes the qsf file
+		*
+		* dependantcies:	the up.qsfFile needed to the the project qsf file opened
+		'''	
 		def closeQsfFile(up):
 			logging.debug("def: closeQsfFile")
 			up.qsfFile.close()
 		
+		'''
+		* def name:			parsQips
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This module parses any quip found in the qsf file for files that need to be included for ip.
+		*					It runs thought each ......................................................................
+		*
+		* dependantcies:	...........................................................................................
+		'''	
 		def parsQips(up):
 			logging.debug("def: parsQuips")
 			for file in up.qipList:
@@ -464,7 +483,27 @@ def updateProcess(mainDir):
 					line = re.sub('\n', '', line)
 			return line
 		
-		def individualFileUpgrade(up): #no try needed here
+		'''
+		* def name:			individualFileUpgrade
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def gets skipped if the balanked upgrade works (upgradeIp). If it is needed this
+		*					def upgrades each piece of ip detected in the project one at a time. Ip in a project is
+		*					detected by the presence of a qip file. Evey qip file coresponds to a .qsys, .v, .vhd,
+		*					or .sv file. The def starts by upgrading the qsys files in the up.qsysFiles list. While
+		*					each file in the up.qsysFiles list is upgraded the file is removed from the up.qipList
+		*					list. This prevents trying to upgrade the same file twice. Last the def locates the 
+		*					coresponding hdl file to the quip file then runs the upgrade command. 
+		*					Example:
+		*						pll.qip => quartus_sh -ip_upgrade -variation_files pll.v top
+		*						niosSys.qip => quartus_sh -ip_upgrade -variation_files niosSys.qip top
+		* 
+		* dependantcies:	This def is dependant on up.qsysFiles and up.qipList. The up.qsysFiles needs to list
+		*					all qsys files used by the project. the up.qipList needs to list all qip files used
+		*					by the project.
+		'''	
+		def individualFileUpgrade(up):
 			updateCommand = ""
 			logging.debug("def: individualFileUpgrade")
 			logging.debug("qsysGlag status: " + str(up.qsysFlag))
