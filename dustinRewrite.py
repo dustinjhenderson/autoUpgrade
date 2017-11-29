@@ -445,10 +445,28 @@ def updateProcess(mainDir):
 					logging.debug("failed to open qip file")
 					up.lastSuc = False
 		
+		'''
+		* def name:			parsQuipParent
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def parsQuipParent(up, file):
 			print os.path.dirname(file) + '/'
 			up.quipParentDirectory = os.path.dirname(file) + '/'
 		
+		'''
+		* def name:			readQip
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def readQip(up, file):
 			logging.debug("def: readQip")
 			for line in file:
@@ -463,6 +481,15 @@ def updateProcess(mainDir):
 							up.nestedQuip = True
 						logging.debug("found file: " + line)
 		
+		'''
+		* def name:			checkForParentDir
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def checkForParentDir(up, line):
 			logging.debug("def: checkForParentDir")
 			if(up.quipParentDirectory != '/'):
@@ -471,6 +498,15 @@ def updateProcess(mainDir):
 				else:
 					return up.quipParentDirectory + line
 		
+		'''
+		* def name:			parsFileNameFromQip
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def parsFileNameFromQip(up, fileType, line):
 			logging.debug("def: parsFileNameFromQip")
 			if(line.find('$::quartus(qip_path)') == -1):
@@ -543,12 +579,30 @@ def updateProcess(mainDir):
 					print "Failed to find IP file in the directory"
 					logging.debug("Failed to find IP file in the directory")
 		
+		'''
+		* def name:			checkForReadMe
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def checkForReadMe(up):
 			logging.debug("def: checkForReadMe")
 			for fileType in up.nonQuartusFileList:
 				for textFiles in up.findAllFilesOfType(fileType):
 					up.fileList.append(textFiles)
-			
+		
+		'''
+		* def name:			checkFileList
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def checkFileList(up):
 			logging.debug("def: checkFileList")
 			up.fileList = list(set(up.fileList)) #remove duplicate files in file list
@@ -557,6 +611,15 @@ def updateProcess(mainDir):
 					if(exclude in line):
 						up.fileList.remove(line)
 		
+		'''
+		* def name:			generateFileList
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def generateFileList(up):
 			logging.debug("def: generateFileList")
 			try:
@@ -571,7 +634,16 @@ def updateProcess(mainDir):
 				logging.debug("failed to write filelist.txt")
 				print "failed to write filelist.txt"
 				up.lastSuc = False
-	
+		
+		'''
+		* def name:			archive
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def archive(up):
 			logging.debug("def: archive")
 			logging.debug("comand: " + str(up.archiveComand))
@@ -587,6 +659,15 @@ def updateProcess(mainDir):
 				logging.debug("error message: " + str(testExcept))
 				up.lastSuc = False
 	
+		'''
+		* def name:			createTestDirectory
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def createTestDirectory(up):
 			logging.debug("def: createTestDirectory")
 			try:
@@ -599,6 +680,15 @@ def updateProcess(mainDir):
 				logging.debug("Error failed to create test directory")
 				up.lastSuc = False
 		
+		'''
+		* def name:			copyArchive
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def copyArchive(up):
 			logging.debug("def: copyArchive")
 			try:
@@ -609,6 +699,15 @@ def updateProcess(mainDir):
 				print "Error copping archive file to test directory"
 				logging.debug("error copping archive file to test directory")
 		
+		'''
+		* def name:			extractArchiveFile
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def extractArchiveFile(up):
 			logging.debug("def: extractArchiveFile")
 			try:
@@ -618,7 +717,16 @@ def updateProcess(mainDir):
 			except subprocess.CalledProcessError as testExcept:
 				print "Error extracting archive file"
 				logging.debug("error extracting archive file")
-				
+		
+		'''
+		* def name:			compileProject
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		
+		* 
+		* dependantcies:	
+		'''	
 		def compileProject(up):
 			logging.debug("def: extractArchiveFile")
 			try:
