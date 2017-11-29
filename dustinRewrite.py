@@ -128,12 +128,28 @@ def updateProcess(mainDir):
 			up.createTestDirectory()
 			if(up.lastSuc == False):
 				return
+			up.lastSuc = False
 			up.copyArchive()
-			logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
-			os.chdir(up.mainDir + '/' + up.testDirName)
+			if(up.lastSuc == False):
+				return
+			try:
+				logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
+				os.chdir(up.mainDir + '/' + up.testDirName)
+			except:
+				print "failed to change working directory to the test directory"
+				return
+			up.lastSuc = False
 			up.extractArchiveFile()
-			up.compileProject() 
-			print "DONE"
+			if(up.lastSuc == False):
+				return
+			up.lastSuc = False
+			up.compileProject()
+			if(up.lastSuc == False):
+				return
+			print "--------------------------------------------------------------------------------------"
+			print "***                                    Done!                                       ***"
+			print "***               Upgrade of the project was successfully completed!               ***"
+			print "--------------------------------------------------------------------------------------"
 		
 		'''
 		* def name:			checkDir
@@ -695,9 +711,11 @@ def updateProcess(mainDir):
 				print "copping archive file to test directory"
 				logging.debug("copping archive file to test directory")
 				up.cmdOut = subprocess.check_output(up.copyArchiveCommand, shell=True)
+				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error copping archive file to test directory"
 				logging.debug("error copping archive file to test directory")
+				up.lastSuc = False
 		
 		'''
 		* def name:			extractArchiveFile
@@ -714,9 +732,11 @@ def updateProcess(mainDir):
 				print "extracting archive file"
 				logging.debug("extracting archive file")
 				up.cmdOut = subprocess.check_output(up.extractArchiveCommand, shell=True)
+				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error extracting archive file"
 				logging.debug("error extracting archive file")
+				up.lastSuc = False
 		
 		'''
 		* def name:			compileProject
@@ -728,16 +748,18 @@ def updateProcess(mainDir):
 		* dependantcies:	
 		'''	
 		def compileProject(up):
-			logging.debug("def: extractArchiveFile")
+			logging.debug("def: compileProject")
 			try:
 				print "compiling test project"
 				logging.debug("compiling test project")
 				up.cmdOut = subprocess.check_output(up.compileCommand, shell=True)
 				#print up.cmdOut
 				logging.debug(up.cmdOut)
+				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error compiling test project"
 				logging.debug("error compiling test project")
+				up.lastSuc = False
 		
 	runClass = upgradeClass()
 
