@@ -586,6 +586,7 @@ def updateProcess(mainDir):
 		*					by the project.
 		'''	
 		def individualFileUpgrade(up):
+			failedFlag = False
 			updateCommand = ""
 			logging.debug("def: individualFileUpgrade")
 			logging.debug("qsysGlag status: " + str(up.qsysFlag))
@@ -605,22 +606,34 @@ def updateProcess(mainDir):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.v', qipFile) + " top"
 					logging.debug("command: " + "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.v', qipFile) + " top")
 					print updateCommand
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try:
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				elif os.path.isfile(re.sub('.qip', '.vhd', qipFile)):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhd', qipFile) + " top"
 					print "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhd', qipFile) + " top"
 					logging.debug("command: " + updateCommand)
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try:
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				elif os.path.isfile(re.sub('.qip', '.vhdl', qipFile)):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhdl', qipFile) + " top"
 					print "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhdl', qipFile) + " top"
 					logging.debug("command: " + updateCommand)
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try: 
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				elif os.path.isfile(re.sub('.qip', '.sv', qipFile)):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.sv', qipFile) + " top"
 					logging.debug("command: " + "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.sv', qipFile) + " top")
 					print "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.sv', qipFile) + " top"
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try:
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				else:
 					print ("Failed to find IP file in the directory: " + qipFile)
 					logging.debug("Failed to find IP file in the directory: " + qipFile)
