@@ -117,6 +117,12 @@ def updateProcess(mainDir):
 				up.individualFileUpgrade()
 				#clear the file list
 				up.fileList = ['platform_setup.tcl', 'filelist.txt'] 
+				up.foundQip = False
+				up.qipList = []
+				up.nestedQuip = False
+				up.quipParentDirectory = ''
+				up.qsysFiles = []
+				up.qsysFlag = False
 				#reparse the updated and upgraded project files
 				up.openQsfFile()
 				if(up.lastSuc == False):
