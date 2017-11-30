@@ -567,7 +567,7 @@ def updateProcess(mainDir):
 					for qsysFile in up.qsysFiles:
 						print "qsys :", re.sub('.qsys', '', qsysFile)
 						print "qip  :", re.sub('.qip', '', qipFile)
-						if re.sub('.qsys', '', qsysFile) in re.sub('.qip', '', qipFile):
+						if (os.path.basename(re.sub('.qsys', '', qsysFile)) == os.path.basename(re.sub('.qip', '', qipFile))):
 							print "match"
 							up.qipList.remove(qipFile)
 						print "\n"
