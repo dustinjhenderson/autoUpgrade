@@ -595,8 +595,8 @@ def updateProcess(mainDir):
 					print "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.sv', qipFile) + " top"
 					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
 				else:
-					print "Failed to find IP file in the directory"
-					logging.debug("Failed to find IP file in the directory")
+					print ("Failed to find IP file in the directory: " + qipFile)
+					logging.debug("Failed to find IP file in the directory: " + qipFile)
 		
 		'''
 		* def name:			checkForReadMe
