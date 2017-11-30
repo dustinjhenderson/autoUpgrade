@@ -279,6 +279,9 @@ def updateProcess(mainDir):
 		def findQsysFiles(up):
 			logging.debug("def: findQsysFiles")
 			up.qsysFiles = up.findAllFilesOfType("qsys")
+			for file in up.qsysFiles:
+				if(".BAK." in  file):
+					up.qsysFiles.remove(file)
 			logging.debug("qsysFiles len :" + str(len(up.qsysFiles)))
 			if(len(up.qsysFiles) != 0):
 				logging.debug("found qsys")
