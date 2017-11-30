@@ -113,7 +113,28 @@ def updateProcess(mainDir):
 			if(up.lastSuc == False):
 				return
 			if(up.blanketUpGrade == False):
+				#individually upgrade each ip
 				up.individualFileUpgrade()
+				#clear the file list
+				up.fileList = ['platform_setup.tcl', 'filelist.txt'] 
+				#reparse the updated and upgraded project files
+				up.openQsfFile()
+				if(up.lastSuc == False):
+					return
+				up.parsQsf()
+				up.closeQsfFile()
+				up.lastSuc = False
+				up.openQsfFile()
+				if(up.lastSuc == False):
+					return
+				up.createPlatformSetUpFile()
+				up.closeQsfFile()
+				up.findQsysFiles()
+				up.findMasterImage()
+				up.lastSuc = False
+				up.parsQips()
+				if(up.lastSuc == False):
+					return
 			up.checkForReadMe()
 			up.checkFileList()
 			up.lastSuc = False
