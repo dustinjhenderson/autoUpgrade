@@ -173,6 +173,10 @@ def updateProcess(mainDir):
 			up.compileProject()
 			if(up.lastSuc == False):
 				return
+			logging.debug("--------------------------------------------------------------------------------------")
+			logging.debug("***                                    Done!                                       ***")
+			logging.debug("***               Upgrade of the project was successfully completed!               ***")
+			logging.debug("--------------------------------------------------------------------------------------")
 			print "--------------------------------------------------------------------------------------"
 			print "***                                    Done!                                       ***"
 			print "***               Upgrade of the project was successfully completed!               ***"
@@ -498,7 +502,7 @@ def updateProcess(mainDir):
 		* 
 		* description:		
 		* 
-		* dependantcies:	
+		* dependantcies:	this def needs to have
 		'''	
 		def parsQuipParent(up, file):
 			print os.path.dirname(file) + '/'
