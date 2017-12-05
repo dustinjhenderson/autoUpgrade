@@ -163,6 +163,7 @@ def updateProcess(mainDir):
 				logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
 				os.chdir(up.mainDir + '/' + up.testDirName)
 			except:
+				logging.debug("ERROR: failed to change working directory to the test directory")
 				print "failed to change working directory to the test directory"
 				return
 			up.lastSuc = False
@@ -195,12 +196,12 @@ def updateProcess(mainDir):
 			logging.debug("def: checkDir")
 			if(os.path.isdir(up.mainDir) == False):
 				print "given path is not a directory"
-				logging.debug("given path is not a directory")
+				logging.debug("ERROR: given path is not a directory")
 				up.lastSuc = False
 				return
 			if(os.path.exists(up.mainDir) == False):
 				print "given path does not exsist"
-				logging.debug("given path does not exsist")
+				logging.debug("ERROR: given path does not exsist")
 				up.lastSuc = False
 				return
 			logging.debug("good directory")
@@ -220,6 +221,8 @@ def updateProcess(mainDir):
 			for x in os.listdir('.'):
 				up.directoryList.append(x)
 		
+		#***********************************************
+		#needs some work!
 		def checkForParQar(up):
 			logging.debug("def: checkForParQar")
 			projectList = []
@@ -236,6 +239,7 @@ def updateProcess(mainDir):
 				up.lastSuc = False
 				up.foundQpf = True
 				up.projName = projectList[0]
+		#***********************************************
 		
 		'''
 		* pulled from the original script
@@ -290,7 +294,8 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 				time.sleep(5) #give the file system time to update
 			except subprocess.CalledProcessError as testExcept:
-				logging.debug("error extracting par")
+				print "error extracting par"
+				logging.debug("ERROR: extracting par")
 				logging.debug("error message: " + str(testExcept))
 				up.lastSuc = False
 		
@@ -358,7 +363,7 @@ def updateProcess(mainDir):
 				print "pdated IP successfully"
 				up.blanketUpGrade = True
 			except subprocess.CalledProcessError as testExcept:
-				logging.debug("error upgrading IP with blanket statement will try individual files")
+				logging.debug("ERROR: upgrading IP with blanket statement will try individual files")
 				logging.debug("error message: " + str(testExcept))
 				up.blanketUpGrade = False
 		
@@ -381,7 +386,7 @@ def updateProcess(mainDir):
 				up.qsfFile = open("top.qsf", "r")
 				up.lastSuc = True
 			except:
-				logging.debug("failed to open qsf file: " + up.projName)
+				logging.debug("ERROR: failed to open qsf file: " + up.projName)
 				print "failed to open qsf file"
 				up.lastSuc = False
 				
@@ -492,7 +497,7 @@ def updateProcess(mainDir):
 					file.close()
 					up.lastSuc = True
 				except:
-					logging.debug("failed to open qip file")
+					logging.debug("ERROR: failed to open qip file")
 					up.lastSuc = False
 		
 		'''
@@ -640,7 +645,7 @@ def updateProcess(mainDir):
 						failedFlag = True
 				else:
 					print ("Failed to find IP file in the directory: " + qipFile)
-					logging.debug("Failed to find IP file in the directory: " + qipFile)
+					logging.debug("ERROR: Failed to find IP file in the directory: " + qipFile)
 		
 		'''
 		* def name:			checkForReadMe
@@ -694,7 +699,7 @@ def updateProcess(mainDir):
 				print "successfully wrote filelist.txt"
 				up.lastSuc = True
 			except:
-				logging.debug("failed to write filelist.txt")
+				logging.debug("ERROR: failed to write filelist.txt")
 				print "failed to write filelist.txt"
 				up.lastSuc = False
 		
@@ -718,7 +723,7 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "error archiving project"
-				logging.debug("error archived project")
+				logging.debug("ERROR: error archived project")
 				logging.debug("error message: " + str(testExcept))
 				up.lastSuc = False
 	
@@ -740,7 +745,7 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 			except:
 				print "Error failed to create test directory"
-				logging.debug("Error failed to create test directory")
+				logging.debug("ERROR: failed to create test directory")
 				up.lastSuc = False
 		
 		'''
@@ -761,7 +766,7 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error copping archive file to test directory"
-				logging.debug("error copping archive file to test directory")
+				logging.debug("ERROR: copping archive file to test directory")
 				up.lastSuc = False
 		
 		'''
@@ -782,7 +787,7 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error extracting archive file"
-				logging.debug("error extracting archive file")
+				logging.debug("ERROR: extracting archive file")
 				up.lastSuc = False
 		
 		'''
@@ -805,7 +810,7 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error compiling test project"
-				logging.debug("error compiling test project")
+				logging.debug("ERROR: compiling test project")
 				up.lastSuc = False
 		
 	runClass = upgradeClass()
