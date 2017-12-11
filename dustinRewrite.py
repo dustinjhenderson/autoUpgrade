@@ -113,7 +113,34 @@ def updateProcess(mainDir):
 			if(up.lastSuc == False):
 				return
 			if(up.blanketUpGrade == False):
+				#individually upgrade each ip
 				up.individualFileUpgrade()
+				#clear the file list
+				up.fileList = ['platform_setup.tcl', 'filelist.txt'] 
+				up.foundQip = False
+				up.qipList = []
+				up.nestedQuip = False
+				up.quipParentDirectory = ''
+				up.qsysFiles = []
+				up.qsysFlag = False
+				#reparse the updated and upgraded project files
+				up.openQsfFile()
+				if(up.lastSuc == False):
+					return
+				up.parsQsf()
+				up.closeQsfFile()
+				up.lastSuc = False
+				up.openQsfFile()
+				if(up.lastSuc == False):
+					return
+				up.createPlatformSetUpFile()
+				up.closeQsfFile()
+				up.findQsysFiles()
+				up.findMasterImage()
+				up.lastSuc = False
+				up.parsQips()
+				if(up.lastSuc == False):
+					return
 			up.checkForReadMe()
 			up.checkFileList()
 			up.lastSuc = False
@@ -128,12 +155,33 @@ def updateProcess(mainDir):
 			up.createTestDirectory()
 			if(up.lastSuc == False):
 				return
+			up.lastSuc = False
 			up.copyArchive()
-			logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
-			os.chdir(up.mainDir + '/' + up.testDirName)
+			if(up.lastSuc == False):
+				return
+			try:
+				logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
+				os.chdir(up.mainDir + '/' + up.testDirName)
+			except:
+				logging.debug("ERROR: failed to change working directory to the test directory")
+				print "failed to change working directory to the test directory"
+				return
+			up.lastSuc = False
 			up.extractArchiveFile()
-			up.compileProject() 
-			print "DONE"
+			if(up.lastSuc == False):
+				return
+			up.lastSuc = False
+			up.compileProject()
+			if(up.lastSuc == False):
+				return
+			logging.debug("--------------------------------------------------------------------------------------")
+			logging.debug("***                                    Done!                                       ***")
+			logging.debug("***               Upgrade of the project was successfully completed!               ***")
+			logging.debug("--------------------------------------------------------------------------------------")
+			print "--------------------------------------------------------------------------------------"
+			print "***                                    Done!                                       ***"
+			print "***               Upgrade of the project was successfully completed!               ***"
+			print "--------------------------------------------------------------------------------------"
 		
 		'''
 		* def name:			checkDir
@@ -148,12 +196,12 @@ def updateProcess(mainDir):
 			logging.debug("def: checkDir")
 			if(os.path.isdir(up.mainDir) == False):
 				print "given path is not a directory"
-				logging.debug("given path is not a directory")
+				logging.debug("ERROR: given path is not a directory")
 				up.lastSuc = False
 				return
 			if(os.path.exists(up.mainDir) == False):
 				print "given path does not exsist"
-				logging.debug("given path does not exsist")
+				logging.debug("ERROR: given path does not exsist")
 				up.lastSuc = False
 				return
 			logging.debug("good directory")
@@ -173,6 +221,8 @@ def updateProcess(mainDir):
 			for x in os.listdir('.'):
 				up.directoryList.append(x)
 		
+		#***********************************************
+		#needs some work!
 		def checkForParQar(up):
 			logging.debug("def: checkForParQar")
 			projectList = []
@@ -189,6 +239,7 @@ def updateProcess(mainDir):
 				up.lastSuc = False
 				up.foundQpf = True
 				up.projName = projectList[0]
+		#***********************************************
 		
 		'''
 		* pulled from the original script
@@ -243,7 +294,8 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 				time.sleep(5) #give the file system time to update
 			except subprocess.CalledProcessError as testExcept:
-				logging.debug("error extracting par")
+				print "error extracting par"
+				logging.debug("ERROR: extracting par")
 				logging.debug("error message: " + str(testExcept))
 				up.lastSuc = False
 		
@@ -263,6 +315,9 @@ def updateProcess(mainDir):
 		def findQsysFiles(up):
 			logging.debug("def: findQsysFiles")
 			up.qsysFiles = up.findAllFilesOfType("qsys")
+			for file in up.qsysFiles:
+				if(".BAK." in  file):
+					up.qsysFiles.remove(file)
 			logging.debug("qsysFiles len :" + str(len(up.qsysFiles)))
 			if(len(up.qsysFiles) != 0):
 				logging.debug("found qsys")
@@ -308,7 +363,7 @@ def updateProcess(mainDir):
 				print "pdated IP successfully"
 				up.blanketUpGrade = True
 			except subprocess.CalledProcessError as testExcept:
-				logging.debug("error upgrading IP with blanket statement will try individual files")
+				logging.debug("ERROR: upgrading IP with blanket statement will try individual files")
 				logging.debug("error message: " + str(testExcept))
 				up.blanketUpGrade = False
 		
@@ -331,7 +386,7 @@ def updateProcess(mainDir):
 				up.qsfFile = open("top.qsf", "r")
 				up.lastSuc = True
 			except:
-				logging.debug("failed to open qsf file: " + up.projName)
+				logging.debug("ERROR: failed to open qsf file: " + up.projName)
 				print "failed to open qsf file"
 				up.lastSuc = False
 				
@@ -442,7 +497,7 @@ def updateProcess(mainDir):
 					file.close()
 					up.lastSuc = True
 				except:
-					logging.debug("failed to open qip file")
+					logging.debug("ERROR: failed to open qip file")
 					up.lastSuc = False
 		
 		'''
@@ -452,7 +507,7 @@ def updateProcess(mainDir):
 		* 
 		* description:		
 		* 
-		* dependantcies:	
+		* dependantcies:	this def needs to have
 		'''	
 		def parsQuipParent(up, file):
 			print os.path.dirname(file) + '/'
@@ -540,6 +595,7 @@ def updateProcess(mainDir):
 		*					by the project.
 		'''	
 		def individualFileUpgrade(up):
+			failedFlag = False
 			updateCommand = ""
 			logging.debug("def: individualFileUpgrade")
 			logging.debug("qsysGlag status: " + str(up.qsysFlag))
@@ -548,7 +604,7 @@ def updateProcess(mainDir):
 					for qsysFile in up.qsysFiles:
 						print "qsys :", re.sub('.qsys', '', qsysFile)
 						print "qip  :", re.sub('.qip', '', qipFile)
-						if re.sub('.qsys', '', qsysFile) in re.sub('.qip', '', qipFile):
+						if (os.path.basename(re.sub('.qsys', '', qsysFile)) == os.path.basename(re.sub('.qip', '', qipFile))):
 							print "match"
 							up.qipList.remove(qipFile)
 						print "\n"
@@ -559,25 +615,37 @@ def updateProcess(mainDir):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.v', qipFile) + " top"
 					logging.debug("command: " + "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.v', qipFile) + " top")
 					print updateCommand
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try:
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				elif os.path.isfile(re.sub('.qip', '.vhd', qipFile)):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhd', qipFile) + " top"
 					print "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhd', qipFile) + " top"
 					logging.debug("command: " + updateCommand)
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try:
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				elif os.path.isfile(re.sub('.qip', '.vhdl', qipFile)):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhdl', qipFile) + " top"
 					print "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.vhdl', qipFile) + " top"
 					logging.debug("command: " + updateCommand)
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try: 
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				elif os.path.isfile(re.sub('.qip', '.sv', qipFile)):
 					updateCommand = "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.sv', qipFile) + " top"
 					logging.debug("command: " + "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.sv', qipFile) + " top")
 					print "quartus_sh -ip_upgrade -variation_files " + re.sub('.qip', '.sv', qipFile) + " top"
-					up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					try:
+						up.cmdOut = subprocess.check_output(updateCommand, shell=True)
+					except:
+						failedFlag = True
 				else:
-					print "Failed to find IP file in the directory"
-					logging.debug("Failed to find IP file in the directory")
+					print ("Failed to find IP file in the directory: " + qipFile)
+					logging.debug("ERROR: Failed to find IP file in the directory: " + qipFile)
 		
 		'''
 		* def name:			checkForReadMe
@@ -631,7 +699,7 @@ def updateProcess(mainDir):
 				print "successfully wrote filelist.txt"
 				up.lastSuc = True
 			except:
-				logging.debug("failed to write filelist.txt")
+				logging.debug("ERROR: failed to write filelist.txt")
 				print "failed to write filelist.txt"
 				up.lastSuc = False
 		
@@ -655,7 +723,7 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "error archiving project"
-				logging.debug("error archived project")
+				logging.debug("ERROR: error archived project")
 				logging.debug("error message: " + str(testExcept))
 				up.lastSuc = False
 	
@@ -677,7 +745,7 @@ def updateProcess(mainDir):
 				up.lastSuc = True
 			except:
 				print "Error failed to create test directory"
-				logging.debug("Error failed to create test directory")
+				logging.debug("ERROR: failed to create test directory")
 				up.lastSuc = False
 		
 		'''
@@ -695,9 +763,11 @@ def updateProcess(mainDir):
 				print "copping archive file to test directory"
 				logging.debug("copping archive file to test directory")
 				up.cmdOut = subprocess.check_output(up.copyArchiveCommand, shell=True)
+				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error copping archive file to test directory"
-				logging.debug("error copping archive file to test directory")
+				logging.debug("ERROR: copping archive file to test directory")
+				up.lastSuc = False
 		
 		'''
 		* def name:			extractArchiveFile
@@ -714,9 +784,11 @@ def updateProcess(mainDir):
 				print "extracting archive file"
 				logging.debug("extracting archive file")
 				up.cmdOut = subprocess.check_output(up.extractArchiveCommand, shell=True)
+				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error extracting archive file"
-				logging.debug("error extracting archive file")
+				logging.debug("ERROR: extracting archive file")
+				up.lastSuc = False
 		
 		'''
 		* def name:			compileProject
@@ -728,16 +800,18 @@ def updateProcess(mainDir):
 		* dependantcies:	
 		'''	
 		def compileProject(up):
-			logging.debug("def: extractArchiveFile")
+			logging.debug("def: compileProject")
 			try:
 				print "compiling test project"
 				logging.debug("compiling test project")
 				up.cmdOut = subprocess.check_output(up.compileCommand, shell=True)
 				#print up.cmdOut
 				logging.debug(up.cmdOut)
+				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error compiling test project"
-				logging.debug("error compiling test project")
+				logging.debug("ERROR: compiling test project")
+				up.lastSuc = False
 		
 	runClass = upgradeClass()
 
