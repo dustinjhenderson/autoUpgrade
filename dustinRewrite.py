@@ -40,7 +40,7 @@ def updateProcess(mainDir):
 			up.fileList = ['platform_setup.tcl', 'filelist.txt']
 			up.qsfFile = ''
 			up.qpfFileName = "top"
-			up.qsfFileName = ""
+			up.qsfFileName = "top.qsf" #currently not detected just hard set
 			up.filesDictionary = {"QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "SYSTEMVERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE"}
 			up.foundQip = False
 			up.qipList = []
@@ -383,7 +383,7 @@ def updateProcess(mainDir):
 				print "opening qsf file"
 				logging.debug("opening qsf file: " + up.projName)
 				print "project name: ", up.projName
-				up.qsfFile = open("top.qsf", "r")
+				up.qsfFile = open(up.qsfFileName, "r")
 				up.lastSuc = True
 			except:
 				logging.debug("ERROR: failed to open qsf file: " + up.projName)
@@ -831,7 +831,7 @@ def main (argv):
 	option_parser.set_defaults(upgrade = None)
 	
 	option_parser.add_option("-u", "--single_upgrade", dest="upgrade", action="store",
-		help="Will upgrade qsys based IP")
+		help="This option will upgrade all the ip in a project")
 		
 	options, args = option_parser.parse_args(argv)
 	
