@@ -486,6 +486,10 @@ def updateProcess(mainDir):
 		'''	
 		def parsQips(up):
 			logging.debug("def: parsQuips")
+			if not up.qipList:
+				logging.debug("no qip files returning lastSuc True")
+				up.lastSuc = True
+				return
 			for file in up.qipList:
 				try:
 					up.parsQuipParent(file)
