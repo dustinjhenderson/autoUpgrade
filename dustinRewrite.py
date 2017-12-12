@@ -457,6 +457,10 @@ def updateProcess(mainDir):
 				line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
 			if '-tag platform' in line:						#which one shows up is dependant on the
 				line = re.sub(' -tag platform', '', line)	#version your porting from
+			if './' in line:
+				line = re.sub('./', '', line)
+			if '.\\' in line:
+				line = re.sub('.\\', '', line)
 			if '\n' in line:
 				line = re.sub('\n', '', line)
 			return line
