@@ -457,6 +457,12 @@ def updateProcess(mainDir):
 				line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
 			if '-tag platform' in line:						#which one shows up is dependant on the
 				line = re.sub(' -tag platform', '', line)	#version your porting from
+			if './' in line:
+				line = re.sub('./', '', line)
+			if '.\\' in line:
+				line = re.sub('.\\', '', line)
+			if ' -section_id DSM_tb' in line:
+				line = re.sub(' -section_id DSM_tb', '', line)
 			if '\n' in line:
 				line = re.sub('\n', '', line)
 			return line
@@ -486,6 +492,10 @@ def updateProcess(mainDir):
 		'''	
 		def parsQips(up):
 			logging.debug("def: parsQuips")
+			if not up.qipList:
+				logging.debug("no qip files returning lastSuc True")
+				up.lastSuc = True
+				return
 			for file in up.qipList:
 				try:
 					up.parsQuipParent(file)
