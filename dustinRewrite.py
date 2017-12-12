@@ -461,6 +461,8 @@ def updateProcess(mainDir):
 				line = re.sub('./', '', line)
 			if '.\\' in line:
 				line = re.sub('.\\', '', line)
+			if ' -section_id DSM_tb' in line:
+				line = re.sub(' -section_id DSM_tb', '', line)
 			if '\n' in line:
 				line = re.sub('\n', '', line)
 			return line
