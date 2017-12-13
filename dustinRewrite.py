@@ -546,7 +546,6 @@ def updateProcess(mainDir):
 			for line in file:
 				for fileType in up.filesDictionary:
 					if fileType in line:
-						#print line
 						line = up.parsFileNameFromQip(fileType, line)
 						line = up.checkForParentDir(line)
 						up.fileList.append(line)
@@ -554,6 +553,7 @@ def updateProcess(mainDir):
 							logging.debug("found qip file. qip flag set true")
 							up.nestedQuip = True
 						logging.debug("found file: " + line)
+						break
 		
 		'''
 		* def name:			checkForParentDir
