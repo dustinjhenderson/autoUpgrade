@@ -364,8 +364,8 @@ def updateProcess(mainDir):
 				print "pdated IP successfully"
 				up.blanketUpGrade = True
 			except subprocess.CalledProcessError as testExcept:
-				logging.debug("ERROR: upgrading IP with blanket statement will try individual files")
-				logging.debug("error message: " + str(testExcept))
+				logging.debug("WARNNING: upgrading IP with blanket statement will try individual files")
+				logging.debug("WARNNING message: " + str(testExcept))
 				up.blanketUpGrade = False
 		
 		'''
