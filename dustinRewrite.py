@@ -533,6 +533,7 @@ def updateProcess(mainDir):
 		* dependantcies:	this def needs to have
 		'''	
 		def parsQuipParent(up, file):
+			logging.debug("def: parsQuipParent")
 			print os.path.dirname(file) + '/'
 			up.quipParentDirectory = os.path.dirname(file) + '/'
 		
