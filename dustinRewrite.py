@@ -438,6 +438,10 @@ def updateProcess(mainDir):
 							logging.debug("found qip file. qip flag set true")
 							up.foundQip = True
 							up.qipList.append(line)
+						if(fileType == 'QSYS_FILE'):
+							logging.debug("found qsys file in qsf. setting qsys flag to true")
+							up.qsysFlag = True #qsys flag
+							up.qsysFiles.append(line) #adde it to qsys list
 						logging.debug("found file: " + line)
 						break
 				
@@ -626,7 +630,7 @@ def updateProcess(mainDir):
 						if (os.path.basename(re.sub('.qsys', '', qsysFile)) == os.path.basename(re.sub('.qip', '', qipFile))):
 							#print "match"
 							up.qipList.remove(qipFile)
-						print "\n"
+						#print "\n"
 				for qsysFile in up.qsysFiles:
 					print "quartus_sh -ip_upgrade -variation_files " + qsysFile + " top"
 			for qipFile in up.qipList:
