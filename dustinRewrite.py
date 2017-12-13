@@ -76,9 +76,9 @@ def updateProcess(mainDir):
 		'''
 		def classMain(up):
 			up.checkDir()
-			up.genDirectoryList()
 			if(up.lastSuc == False):
 				return
+			up.genDirectoryList()
 			up.lastSuc = False
 			up.checkForParQar()
 			if(up.foundPar == up.foundQpf):
