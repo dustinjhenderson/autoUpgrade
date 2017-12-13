@@ -42,7 +42,7 @@ def updateProcess(mainDir):
 			up.qsfFile = ''
 			up.qpfFileName = "top"
 			up.qsfFileName = "top.qsf" #currently not detected just hard set
-			up.filesDictionary = {"QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "SYSTEMVERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE"}
+			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE"]
 			up.foundQip = False
 			up.qipList = []
 			up.nestedQuip = False
@@ -438,6 +438,7 @@ def updateProcess(mainDir):
 							up.foundQip = True
 							up.qipList.append(line)
 						logging.debug("found file: " + line)
+						break
 				
 		'''
 		* def name:			parsFileNameFromQsf
@@ -457,8 +458,8 @@ def updateProcess(mainDir):
 			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line) #this line is not working for system verilog
 			#****************************************
 			#temperary fix
-			if 'set_global_assignment -name SYSTEMVERILOG_FILE' in line
-				line = re.sub('set_global_assignment -name SYSTEMVERILOG_FILE ', '', line)
+			#if 'set_global_assignment -name SYSTEMVERILOG_FILE' in line
+			#	line = re.sub('set_global_assignment -name SYSTEMVERILOG_FILE ', '', line)
 			#****************************************
 			if '-tag platfrom' in line:
 				line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
