@@ -453,7 +453,13 @@ def updateProcess(mainDir):
 		'''	
 		def parsFileNameFromQsf(up, fileType, line):
 			logging.debug("def: parsFileNameFromQsf")
-			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line)
+			#             "set_global_assignment -name SYSTEMVERILOG_FILE "
+			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line) #this line is not working for system verilog
+			#****************************************
+			#temperary fix
+			if 'set_global_assignment -name SYSTEMVERILOG_FILE' in line
+				line = re.sub('set_global_assignment -name SYSTEMVERILOG_FILE ', '', line)
+			#****************************************
 			if '-tag platfrom' in line:
 				line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
 			if '-tag platform' in line:						#which one shows up is dependant on the
