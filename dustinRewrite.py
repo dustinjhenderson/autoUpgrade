@@ -24,17 +24,18 @@ def updateProcess(mainDir):
 		def __init__(up):
 			print(mainDir + '/LOGOUT.log')
 			logging.debug("def: main")
-			up.mainDir = mainDir
-			up.lastSuc = False
-			up.foundQpf = False
-			up.foundPar = False
-			up.projName = ""
+			up.mainDir = mainDir		#set the main directory the same as the one passed in to the class this is used to store the location of the
+			up.lastSuc = False			#this bool is used to tell if the last function that was run was succeful
+			up.foundQpf = False			#this bool is used to tell if a qpf was found in the main directory
+			up.foundPar = False			#this bool is used to tell if there is a par in the main directory
+			up.projName = ""			#this string is used to store the name of the project
 			#example qextract syntax
 			#"quartus_sh --platform_install -package audio_monitor.par; quartus_sh --platform -name audio_monitor -search_path \."
 			up.extracParCommand = "" # will get filled in when the name is detected
-			up.extracParCommand1 = "quartus_sh --platform_install -package " 
-			up.extracParCommand2 = "; quartus_sh --platform -name " 
-			up.extracParCommand3 = " -search_path \."
+			#the three
+			up.extracParCommand1 = "quartus_sh --platform_install -package "	#part one of the extract command
+			up.extracParCommand2 = "; quartus_sh --platform -name " 			#part two of the extract command
+			up.extracParCommand3 = " -search_path \."							#part three of the extract command
 			up.cmdOut = ""
 			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "
 			up.fileList = ['platform_setup.tcl', 'filelist.txt']
