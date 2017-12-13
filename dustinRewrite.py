@@ -36,17 +36,18 @@ def updateProcess(mainDir):
 			up.extracParCommand1 = "quartus_sh --platform_install -package "	#part one of the extract command
 			up.extracParCommand2 = "; quartus_sh --platform -name " 			#part two of the extract command
 			up.extracParCommand3 = " -search_path \."							#part three of the extract command
-			up.cmdOut = ""
-			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "
-			up.fileList = ['platform_setup.tcl', 'filelist.txt']
-			up.qsfFile = ''
-			up.qpfFileName = "top"
-			up.qsfFileName = "top.qsf" #currently not detected just hard set
+			up.cmdOut = ""														#this sting sotres output of the cmd after a comand is run
+			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "			#the comand used to complete the blanket upgrade
+			up.fileList = ['platform_setup.tcl', 'filelist.txt']				#this list stores all the files that will be written to the file list.txt used for archiving the project
+			up.qsfFile = ''														#sting stores the name of the project qsf file
+			up.qpfFileName = "top"												#stores the name of the quartus project file
+			up.qsfFileName = "top.qsf" 											#currently not detected just hard set sotres the name of the quartus setting file
+			#list of the tags used in the settings file for files that need to be included in the file list
 			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE"]
-			up.foundQip = False
-			up.qipList = []
-			up.nestedQuip = False
-			up.directoryList = []
+			up.foundQip = False													#bool used to flag if there is qip files in the project
+			up.qipList = []														#stores a list of all the qip files. populated after the qsf is parsed
+			up.nestedQuip = False												#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
+			up.directoryList = []												#
 			up.quipParentDirectory = ''
 			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"
 			up.excludeDictionary = {".qprs", ".qsf", ".qpf"}
@@ -382,7 +383,7 @@ def updateProcess(mainDir):
 			logging.debug("def: openQsfFile")
 			try: 
 				print "opening qsf file"
-				logging.debug("opening qsf file: " + up.projName)
+				logging.debug("opening qsf file: " + up.qsfFileName)
 				print "project name: ", up.projName
 				up.qsfFile = open(up.qsfFileName, "r")
 				up.lastSuc = True
