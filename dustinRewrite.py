@@ -505,6 +505,8 @@ def updateProcess(mainDir):
 		'''	
 		def parsQips(up):
 			logging.debug("def: parsQuips")
+			for file in up.qipList:
+				logging.debug("qipList item: " + str(file))
 			if not up.qipList:
 				logging.debug("no qip files returning lastSuc True")
 				up.lastSuc = True
@@ -512,7 +514,7 @@ def updateProcess(mainDir):
 			for file in up.qipList:
 				try:
 					up.parsQuipParent(file)
-					logging.debug("opening file: " + file)
+					logging.debug("opening file: " + str(file))
 					file = open(file, "r") #'ip/bemicro_max10_serial_flash_controller/bemicro_max10_serial_flash_controller.qip'
 					logging.debug('file opened successfully')
 					up.readQip(file)
@@ -557,7 +559,7 @@ def updateProcess(mainDir):
 						if(fileType == 'QIP_FILE'):
 							logging.debug("found qip file. qip flag set true")
 							up.nestedQuip = True
-						logging.debug("found file: " + line)
+						logging.debug("found file: " + str(line))
 						break
 		
 		'''
@@ -700,7 +702,7 @@ def updateProcess(mainDir):
 			up.fileList = list(set(up.fileList)) #remove duplicate files in file list
 			for line in up.fileList:
 				for exclude in up.excludeDictionary:
-					if(exclude in line):
+					if(exclude in str(line)):
 						up.fileList.remove(line)
 		
 		'''
@@ -717,7 +719,7 @@ def updateProcess(mainDir):
 			try:
 				file = open("filelist.txt", "w")
 				for line in up.fileList:
-					file.write(line + '\n')
+					file.write(str(line) + '\n')
 				file.close()
 				logging.debug("successfully wrote filelist.txt")
 				print "successfully wrote filelist.txt"
