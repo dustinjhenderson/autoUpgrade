@@ -50,7 +50,7 @@ def updateProcess(mainDir):
 			up.directoryList = []												#
 			up.quipParentDirectory = ''
 			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"
-			up.excludeDictionary = {".qprs", ".qsf", ".qpf"}
+			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None"}
 			up.testDirName = 'testDirectory'
 			up.copyArchiveCommand = "cp upgrade.qar " + up.testDirName + "/upgrade.qar"
 			up.extractArchiveCommand = "quartus_sh --platform -name upgrade.qar"
@@ -478,6 +478,8 @@ def updateProcess(mainDir):
 				line = re.sub(' -section_id DSM_tb', '', line)
 			if '\n' in line:
 				line = re.sub('\n', '', line)
+			if '-section_id testBenchTop' in line:
+				line = re.sub(' -section_id testBenchTop', '', line)
 			return line
 			
 		'''
