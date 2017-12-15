@@ -581,6 +581,8 @@ def updateProcess(mainDir):
 					return line
 				else:
 					return up.quipParentDirectory + line
+			else
+				return line
 		
 		'''
 		* def name:			parsFileNameFromQip
