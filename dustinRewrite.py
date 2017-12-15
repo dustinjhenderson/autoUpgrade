@@ -501,9 +501,10 @@ def updateProcess(mainDir):
 		* creator:			Dustin Henderson
 		* 
 		* description:		This module parses any quip found in the qsf file for files that need to be included for ip.
-		*					It runs thought each ......................................................................
+		*					It runs thought each file in the list. This def also callse another def to identify the parent
+		*					directory of the file parsed from the qip file.
 		*
-		* dependantcies:	...........................................................................................
+		* dependantcies:	up.qipList needs to contain anny qip files used by the project. 
 		'''	
 		def parsQips(up):
 			logging.debug("def: parsQuips")
@@ -532,9 +533,10 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def is responcible for identifing the parent directory of the files contained in the qip.
+		*					If the qip file is in the project directory this def will return "/"
 		* 
-		* dependantcies:	this def needs to have
+		* dependantcies:	this def requiers that the name of the qip file be passed into it.
 		'''	
 		def parsQuipParent(up, file):
 			logging.debug("def: parsQuipParent")
@@ -547,9 +549,13 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		this def runs thrugh the qip file line by line looking for any source file that need to be included
+		*					for the project. It relys on several other defs that pars the names for the files from the tcl
+		*					syntax used used in the qip files. Additionally it flags nested QIP files. nested quip files will
+		*					cause an error because the script currently does not support it. 
 		* 
-		* dependantcies:	
+		* dependantcies:	This def is dependant on the up.filesDictionary being preloaded with the file types it should be looking
+		*					for. Additionally it needs sub defs to pars the name of the file from the tcl syntax.
 		'''	
 		def readQip(up, file):
 			logging.debug("def: readQip")
@@ -570,9 +576,10 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def parses the parent directory of the file found in the QIP. If the file is in the project
+		*					directory it will return "/"
 		* 
-		* dependantcies:	
+		* dependantcies:	the name of the quip file needs to be passed in as line.
 		'''	
 		def checkForParentDir(up, line):
 			logging.debug("def: checkForParentDir")
@@ -589,9 +596,11 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def parses the name of the file called by the qip from the tcl syntax. It does this by deleting
+		*					the surounding tcl syntax.
 		* 
-		* dependantcies:	
+		* dependantcies:	The file type and line of tcl code need to be passed to this def. The file tupe is the tag that the
+		*					qip uses to tag what type of file it is. The line is the full line of text that comes form the sip file
 		'''	
 		def parsFileNameFromQip(up, fileType, line):
 			logging.debug("def: parsFileNameFromQip")
