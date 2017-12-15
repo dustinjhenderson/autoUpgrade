@@ -540,6 +540,7 @@ def updateProcess(mainDir):
 			logging.debug("def: parsQuipParent")
 			print os.path.dirname(file) + '/'
 			up.quipParentDirectory = os.path.dirname(file) + '/'
+			logging.debug("quip parent: " + str(up.quipParentDirectory))
 		
 		'''
 		* def name:			readQip
