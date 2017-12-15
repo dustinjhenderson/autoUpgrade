@@ -24,31 +24,33 @@ def updateProcess(mainDir):
 		def __init__(up):
 			print(mainDir + '/LOGOUT.log')
 			logging.debug("def: main")
-			up.mainDir = mainDir
-			up.lastSuc = False
-			up.foundQpf = False
-			up.foundPar = False
-			up.projName = ""
+			up.mainDir = mainDir		#set the main directory the same as the one passed in to the class this is used to store the location of the
+			up.lastSuc = False			#this bool is used to tell if the last function that was run was succeful
+			up.foundQpf = False			#this bool is used to tell if a qpf was found in the main directory
+			up.foundPar = False			#this bool is used to tell if there is a par in the main directory
+			up.projName = ""			#this string is used to store the name of the project
 			#example qextract syntax
 			#"quartus_sh --platform_install -package audio_monitor.par; quartus_sh --platform -name audio_monitor -search_path \."
 			up.extracParCommand = "" # will get filled in when the name is detected
-			up.extracParCommand1 = "quartus_sh --platform_install -package " 
-			up.extracParCommand2 = "; quartus_sh --platform -name " 
-			up.extracParCommand3 = " -search_path \."
-			up.cmdOut = ""
-			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "
-			up.fileList = ['platform_setup.tcl', 'filelist.txt']
-			up.qsfFile = ''
-			up.qpfFileName = "top"
-			up.qsfFileName = ""
-			up.filesDictionary = {"QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "SYSTEMVERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE"}
-			up.foundQip = False
-			up.qipList = []
-			up.nestedQuip = False
-			up.directoryList = []
+			#the three
+			up.extracParCommand1 = "quartus_sh --platform_install -package "	#part one of the extract command
+			up.extracParCommand2 = "; quartus_sh --platform -name " 			#part two of the extract command
+			up.extracParCommand3 = " -search_path \."							#part three of the extract command
+			up.cmdOut = ""														#this sting sotres output of the cmd after a comand is run
+			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "			#the comand used to complete the blanket upgrade
+			up.fileList = ['platform_setup.tcl', 'filelist.txt']				#this list stores all the files that will be written to the file list.txt used for archiving the project
+			up.qsfFile = ''														#sting stores the name of the project qsf file
+			up.qpfFileName = "top"												#stores the name of the quartus project file
+			up.qsfFileName = "top.qsf" 											#currently not detected just hard set sotres the name of the quartus setting file
+			#list of the tags used in the settings file for files that need to be included in the file list
+			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE"]
+			up.foundQip = False													#bool used to flag if there is qip files in the project
+			up.qipList = []														#stores a list of all the qip files. populated after the qsf is parsed
+			up.nestedQuip = False												#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
+			up.directoryList = []												#
 			up.quipParentDirectory = ''
 			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"
-			up.excludeDictionary = {".qprs", ".qsf", ".qpf"}
+			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None"}
 			up.testDirName = 'testDirectory'
 			up.copyArchiveCommand = "cp upgrade.qar " + up.testDirName + "/upgrade.qar"
 			up.extractArchiveCommand = "quartus_sh --platform -name upgrade.qar"
@@ -74,9 +76,9 @@ def updateProcess(mainDir):
 		'''
 		def classMain(up):
 			up.checkDir()
-			up.genDirectoryList()
 			if(up.lastSuc == False):
 				return
+			up.genDirectoryList()
 			up.lastSuc = False
 			up.checkForParQar()
 			if(up.foundPar == up.foundQpf):
@@ -363,8 +365,8 @@ def updateProcess(mainDir):
 				print "pdated IP successfully"
 				up.blanketUpGrade = True
 			except subprocess.CalledProcessError as testExcept:
-				logging.debug("ERROR: upgrading IP with blanket statement will try individual files")
-				logging.debug("error message: " + str(testExcept))
+				logging.debug("WARNNING: upgrading IP with blanket statement will try individual files")
+				logging.debug("WARNNING message: " + str(testExcept))
 				up.blanketUpGrade = False
 		
 		'''
@@ -381,9 +383,9 @@ def updateProcess(mainDir):
 			logging.debug("def: openQsfFile")
 			try: 
 				print "opening qsf file"
-				logging.debug("opening qsf file: " + up.projName)
+				logging.debug("opening qsf file: " + up.qsfFileName)
 				print "project name: ", up.projName
-				up.qsfFile = open("top.qsf", "r")
+				up.qsfFile = open(up.qsfFileName, "r")
 				up.lastSuc = True
 			except:
 				logging.debug("ERROR: failed to open qsf file: " + up.projName)
@@ -436,7 +438,12 @@ def updateProcess(mainDir):
 							logging.debug("found qip file. qip flag set true")
 							up.foundQip = True
 							up.qipList.append(line)
+						if(fileType == 'QSYS_FILE'):
+							logging.debug("found qsys file in qsf. setting qsys flag to true")
+							up.qsysFlag = True #qsys flag
+							up.qsysFiles.append(line) #adde it to qsys list
 						logging.debug("found file: " + line)
+						break
 				
 		'''
 		* def name:			parsFileNameFromQsf
@@ -452,7 +459,13 @@ def updateProcess(mainDir):
 		'''	
 		def parsFileNameFromQsf(up, fileType, line):
 			logging.debug("def: parsFileNameFromQsf")
-			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line)
+			#             "set_global_assignment -name SYSTEMVERILOG_FILE "
+			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line) #this line is not working for system verilog
+			#****************************************
+			#temperary fix
+			#if 'set_global_assignment -name SYSTEMVERILOG_FILE' in line
+			#	line = re.sub('set_global_assignment -name SYSTEMVERILOG_FILE ', '', line)
+			#****************************************
 			if '-tag platfrom' in line:
 				line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
 			if '-tag platform' in line:						#which one shows up is dependant on the
@@ -465,6 +478,8 @@ def updateProcess(mainDir):
 				line = re.sub(' -section_id DSM_tb', '', line)
 			if '\n' in line:
 				line = re.sub('\n', '', line)
+			if '-section_id testBenchTop' in line:
+				line = re.sub(' -section_id testBenchTop', '', line)
 			return line
 			
 		'''
@@ -486,12 +501,15 @@ def updateProcess(mainDir):
 		* creator:			Dustin Henderson
 		* 
 		* description:		This module parses any quip found in the qsf file for files that need to be included for ip.
-		*					It runs thought each ......................................................................
+		*					It runs thought each file in the list. This def also callse another def to identify the parent
+		*					directory of the file parsed from the qip file.
 		*
-		* dependantcies:	...........................................................................................
+		* dependantcies:	up.qipList needs to contain anny qip files used by the project. 
 		'''	
 		def parsQips(up):
 			logging.debug("def: parsQuips")
+			for file in up.qipList:
+				logging.debug("qipList item: " + str(file))
 			if not up.qipList:
 				logging.debug("no qip files returning lastSuc True")
 				up.lastSuc = True
@@ -499,7 +517,7 @@ def updateProcess(mainDir):
 			for file in up.qipList:
 				try:
 					up.parsQuipParent(file)
-					logging.debug("opening file: " + file)
+					logging.debug("opening file: " + str(file))
 					file = open(file, "r") #'ip/bemicro_max10_serial_flash_controller/bemicro_max10_serial_flash_controller.qip'
 					logging.debug('file opened successfully')
 					up.readQip(file)
@@ -515,45 +533,53 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def is responcible for identifing the parent directory of the files contained in the qip.
+		*					If the qip file is in the project directory this def will return "/"
 		* 
-		* dependantcies:	this def needs to have
+		* dependantcies:	this def requiers that the name of the qip file be passed into it.
 		'''	
 		def parsQuipParent(up, file):
+			logging.debug("def: parsQuipParent")
 			print os.path.dirname(file) + '/'
 			up.quipParentDirectory = os.path.dirname(file) + '/'
+			logging.debug("quip parent: " + str(up.quipParentDirectory))
 		
 		'''
 		* def name:			readQip
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		this def runs thrugh the qip file line by line looking for any source file that need to be included
+		*					for the project. It relys on several other defs that pars the names for the files from the tcl
+		*					syntax used used in the qip files. Additionally it flags nested QIP files. nested quip files will
+		*					cause an error because the script currently does not support it. 
 		* 
-		* dependantcies:	
+		* dependantcies:	This def is dependant on the up.filesDictionary being preloaded with the file types it should be looking
+		*					for. Additionally it needs sub defs to pars the name of the file from the tcl syntax.
 		'''	
 		def readQip(up, file):
 			logging.debug("def: readQip")
 			for line in file:
 				for fileType in up.filesDictionary:
 					if fileType in line:
-						#print line
 						line = up.parsFileNameFromQip(fileType, line)
 						line = up.checkForParentDir(line)
 						up.fileList.append(line)
 						if(fileType == 'QIP_FILE'):
 							logging.debug("found qip file. qip flag set true")
 							up.nestedQuip = True
-						logging.debug("found file: " + line)
+						logging.debug("found file: " + str(line))
+						break
 		
 		'''
 		* def name:			checkForParentDir
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def parses the parent directory of the file found in the QIP. If the file is in the project
+		*					directory it will return "/"
 		* 
-		* dependantcies:	
+		* dependantcies:	the name of the quip file needs to be passed in as line.
 		'''	
 		def checkForParentDir(up, line):
 			logging.debug("def: checkForParentDir")
@@ -562,15 +588,19 @@ def updateProcess(mainDir):
 					return line
 				else:
 					return up.quipParentDirectory + line
+			else:
+				return line
 		
 		'''
 		* def name:			parsFileNameFromQip
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def parses the name of the file called by the qip from the tcl syntax. It does this by deleting
+		*					the surounding tcl syntax.
 		* 
-		* dependantcies:	
+		* dependantcies:	The file type and line of tcl code need to be passed to this def. The file tupe is the tag that the
+		*					qip uses to tag what type of file it is. The line is the full line of text that comes form the sip file
 		'''	
 		def parsFileNameFromQip(up, fileType, line):
 			logging.debug("def: parsFileNameFromQip")
@@ -612,12 +642,12 @@ def updateProcess(mainDir):
 			if(up.qsysFlag == True):
 				for qipFile in up.qipList:
 					for qsysFile in up.qsysFiles:
-						print "qsys :", re.sub('.qsys', '', qsysFile)
-						print "qip  :", re.sub('.qip', '', qipFile)
+						#print "qsys :", re.sub('.qsys', '', qsysFile)
+						#print "qip  :", re.sub('.qip', '', qipFile)
 						if (os.path.basename(re.sub('.qsys', '', qsysFile)) == os.path.basename(re.sub('.qip', '', qipFile))):
-							print "match"
+							#print "match"
 							up.qipList.remove(qipFile)
-						print "\n"
+						#print "\n"
 				for qsysFile in up.qsysFiles:
 					print "quartus_sh -ip_upgrade -variation_files " + qsysFile + " top"
 			for qipFile in up.qipList:
@@ -662,9 +692,11 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def finds any files that could be directions or read me files in the project.
+		*					To do this it searches for different file types.
 		* 
-		* dependantcies:	
+		* dependantcies:	This def is dependant on the up.nonQuartusFileList to be populated with different
+		*					file exensions that could be read me files. example .docx, .txt, .pdf, ect.
 		'''	
 		def checkForReadMe(up):
 			logging.debug("def: checkForReadMe")
@@ -677,16 +709,20 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def is the final check of the files list before it is written to the
+		*					filelist.txt file. This file checks for violations by comparing to list to
+		*					the up.excludeDictionary list. If any of the file list items match they are
+		*					removed from the list.
 		* 
-		* dependantcies:	
+		* dependantcies:	This is dependant on having the up.excludeDictionary list populated with any
+		*					files that need to not be included in the file list.
 		'''	
 		def checkFileList(up):
 			logging.debug("def: checkFileList")
 			up.fileList = list(set(up.fileList)) #remove duplicate files in file list
 			for line in up.fileList:
 				for exclude in up.excludeDictionary:
-					if(exclude in line):
+					if(exclude in str(line)):
 						up.fileList.remove(line)
 		
 		'''
@@ -703,7 +739,7 @@ def updateProcess(mainDir):
 			try:
 				file = open("filelist.txt", "w")
 				for line in up.fileList:
-					file.write(line + '\n')
+					file.write(str(line) + '\n')
 				file.close()
 				logging.debug("successfully wrote filelist.txt")
 				print "successfully wrote filelist.txt"
@@ -831,7 +867,7 @@ def main (argv):
 	option_parser.set_defaults(upgrade = None)
 	
 	option_parser.add_option("-u", "--single_upgrade", dest="upgrade", action="store",
-		help="Will upgrade qsys based IP")
+		help="This option will upgrade all the ip in a project")
 		
 	options, args = option_parser.parse_args(argv)
 	
