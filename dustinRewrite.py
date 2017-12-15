@@ -692,9 +692,11 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def finds any files that could be directions or read me files in the project.
+		*					To do this it searches for different file types.
 		* 
-		* dependantcies:	
+		* dependantcies:	This def is dependant on the up.nonQuartusFileList to be populated with different
+		*					file exensions that could be read me files. example .docx, .txt, .pdf, ect.
 		'''	
 		def checkForReadMe(up):
 			logging.debug("def: checkForReadMe")
@@ -707,9 +709,13 @@ def updateProcess(mainDir):
 		* 
 		* creator:			Dustin Henderson
 		* 
-		* description:		
+		* description:		This def is the final check of the files list before it is written to the
+		*					filelist.txt file. This file checks for violations by comparing to list to
+		*					the up.excludeDictionary list. If any of the file list items match they are
+		*					removed from the list.
 		* 
-		* dependantcies:	
+		* dependantcies:	This is dependant on having the up.excludeDictionary list populated with any
+		*					files that need to not be included in the file list.
 		'''	
 		def checkFileList(up):
 			logging.debug("def: checkFileList")
