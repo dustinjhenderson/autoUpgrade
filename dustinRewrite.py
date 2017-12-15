@@ -581,7 +581,7 @@ def updateProcess(mainDir):
 					return line
 				else:
 					return up.quipParentDirectory + line
-			else
+			else:
 				return line
 		
 		'''
