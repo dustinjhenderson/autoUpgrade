@@ -43,7 +43,7 @@ def updateProcess(mainDir):
 			up.qpfFileName = "top"												#stores the name of the quartus project file
 			up.qsfFileName = "top.qsf" 											#currently not detected just hard set sotres the name of the quartus setting file
 			#list of the tags used in the settings file for files that need to be included in the file list
-			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "SIGNALTAP_FILE", "SLD_FILE"]
+			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE"]
 			up.foundQip = False													#bool used to flag if there is qip files in the project
 			up.qipList = []														#stores a list of all the qip files. populated after the qsf is parsed
 			up.nestedQuip = False												#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
