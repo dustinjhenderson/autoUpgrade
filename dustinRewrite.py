@@ -47,10 +47,10 @@ def updateProcess(mainDir):
 			up.foundQip = False													#bool used to flag if there is qip files in the project
 			up.qipList = []														#stores a list of all the qip files. populated after the qsf is parsed
 			up.nestedQuip = False												#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
-			up.directoryList = []												#
-			up.quipParentDirectory = ''
-			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"
-			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None"}
+			up.directoryList = []												#This list stores every directory in the directory passed to the script
+			up.quipParentDirectory = ''											#This string is used to store the directory a qip file that is beeing parsed is stored in
+			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"	#This string is the archive command used to package the upgraded project
+			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None"}			#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
 			up.testDirName = 'testDirectory'
 			up.copyArchiveCommand = "cp upgrade.qar " + up.testDirName + "/upgrade.qar"
 			up.extractArchiveCommand = "quartus_sh --platform -name upgrade.qar"
