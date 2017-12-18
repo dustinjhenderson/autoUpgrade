@@ -54,19 +54,23 @@ def updateProcess(mainDir):
 			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "USE_SIGNALTAP_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE"]
 			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None", ".BAK."}	#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
 			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]#This list stores all file typs that are possibly documentation or read me file in the project directory.
-			up.masterImageFileTypes = ["sof", "pof", "elf", "iso"]				#***TODO:*** add hex files for memeory configuration
+			up.masterImageFileTypes = ["sof", "pof", "elf", "iso", ".hex"]		#***TODO:*** add hex files for memeory configuration
 		
 			'''****************'''
-			'''**** names *****'''
+			'''** user names **'''
 			'''****************'''
-			up.projName = ""					#this string is used to store the name of the project
-			up.mainDir = mainDir				#set the main directory the same as the one passed in to the class this is used to store the location of the
-			up.qsfFile = ''						#sting stores the name of the project qsf file
 			up.qpfFileName = "top"				#stores the name of the quartus project file
 			up.qsfFileName = "top.qsf" 			#currently not detected just hard set sotres the name of the quartus setting file
-			up.quipParentDirectory = ''			#This string is used to store the directory a qip file that is beeing parsed is stored in
 			up.testDirName = 'testDirectory'	#this string stores the name of the directory that will be created to test the upgraded project. It needs to be a legal dir name and unique
-			up.cmdOut = ""						#this sting sotres output of the cmd after a comand is run
+			
+			'''****************'''
+			'''generated names '''
+			'''****************'''
+			up.projName = ""			#this string is used to store the name of the project
+			up.mainDir = mainDir		#set the main directory the same as the one passed in to the class this is used to store the location of the
+			up.qsfFile = ''				#sting stores the name of the project qsf file
+			up.quipParentDirectory = ''	#This string is used to store the directory a qip file that is beeing parsed is stored in
+			up.cmdOut = ""				#this sting sotres output of the cmd after a comand is run
 		
 			'''****************'''
 			'''*** Commands ***'''
