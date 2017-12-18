@@ -61,7 +61,7 @@ def updateProcess(mainDir):
 			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]#This list stores all file typs that are possibly documentation or read me file in the project directory.
 			up.masterImageFileTypes = ["sof", "pof", "elf", "iso"]				#***TODO:*** add hex files for memeory configuration
 			
-			up.classMain()	#call the main def of the class
+			up.upgradeClassMain()	#call the main def of the class
 			
 		'''
 		* def name:			classMain
@@ -74,7 +74,7 @@ def updateProcess(mainDir):
 		*					in the classe beeing initialised. Also this def should be called 
 		*					at the end of the init in the class.
 		'''
-		def classMain(up):
+		def upgradeClassMain(up):
 			up.checkDir()
 			if(up.lastSuc == False):
 				return
