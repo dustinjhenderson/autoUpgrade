@@ -51,17 +51,17 @@ def updateProcess(mainDir):
 			up.quipParentDirectory = ''											#This string is used to store the directory a qip file that is beeing parsed is stored in
 			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"	#This string is the archive command used to package the upgraded project
 			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None", ".BAK."}	#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
-			up.testDirName = 'testDirectory'
-			up.copyArchiveCommand = "cp upgrade.qar " + up.testDirName + "/upgrade.qar"
-			up.extractArchiveCommand = "quartus_sh --platform -name upgrade.qar"
-			up.compileCommand = "quartus_sh --flow compile top.qpf"
-			up.qsysFiles = []
-			up.qsysFlag = False
-			up.blanketUpGrade = False
-			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]
-			up.masterImageFileTypes = ["sof", "pof", "elf", "iso"] #add hex files for memeory configuration
+			up.testDirName = 'testDirectory'									#this string stores the name of the directory that will be created to test the upgraded project. It needs to be a legal dir name and unique
+			up.copyArchiveCommand = "cp upgrade.qar " + up.testDirName + "/upgrade.qar"	#This sting stores the command for coping upgraded archive file to the test directory
+			up.extractArchiveCommand = "quartus_sh --platform -name upgrade.qar"#this string contains the command to extract the archived project created by the script
+			up.compileCommand = "quartus_sh --flow compile top.qpf"				#this string contains the command for compiling the upgraded project in the test directory
+			up.qsysFiles = []													#this bool is used to indicate whether or not a qip file is found in the qsf file.
+			up.qsysFlag = False													#this bool is used to indicate whether or not a qsys file is found in the project directory
+			up.blanketUpGrade = False											#this bool is used to indicate if the blanket upgrade was succeful.
+			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]#This list stores all file typs that are possibly documentation or read me file in the project directory.
+			up.masterImageFileTypes = ["sof", "pof", "elf", "iso"]				#***TODO:*** add hex files for memeory configuration
 			
-			up.classMain()
+			up.classMain()	#call the main def of the class
 			
 		'''
 		* def name:			classMain
