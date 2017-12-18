@@ -22,13 +22,55 @@ def updateProcess(mainDir):
 	class upgradeClass:
 		
 		def __init__(up):
+			'''****************'''
+			'''initiate logging'''
+			'''****************'''
 			print(mainDir + '/LOGOUT.log')
 			logging.debug("def: main")
-			up.mainDir = mainDir		#set the main directory the same as the one passed in to the class this is used to store the location of the
+		
+			'''****************'''
+			'''**** flags *****'''
+			'''****************'''
 			up.lastSuc = False			#this bool is used to tell if the last function that was run was succeful
 			up.foundQpf = False			#this bool is used to tell if a qpf was found in the main directory
 			up.foundPar = False			#this bool is used to tell if there is a par in the main directory
-			up.projName = ""			#this string is used to store the name of the project
+			up.foundQip = False			#bool used to flag if there is qip files in the project
+			up.nestedQuip = False		#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
+			up.qsysFlag = False			#this bool is used to indicate whether or not a qsys file is found in the project directory
+			up.blanketUpGrade = False	#this bool is used to indicate if the blanket upgrade was succeful.
+			
+			'''****************'''
+			'''generated lists '''
+			'''****************'''
+			up.qipList = []											#stores a list of all the qip files. populated after the qsf is parsed
+			up.directoryList = []									#This list stores every directory in the directory passed to the script
+			up.qsysFiles = []										#
+			up.fileList = ['platform_setup.tcl', 'filelist.txt']	#this list stores all the files that will be written to the file list.txt used for archiving the project
+			
+			'''****************'''
+			'''** user lists **'''
+			'''****************'''
+			#list of the tags used in the settings file for files that need to be included in the file list
+			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "USE_SIGNALTAP_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE"]
+			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None", ".BAK."}	#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
+			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]#This list stores all file typs that are possibly documentation or read me file in the project directory.
+			up.masterImageFileTypes = ["sof", "pof", "elf", "iso"]				#***TODO:*** add hex files for memeory configuration
+		
+			'''****************'''
+			'''**** names *****'''
+			'''****************'''
+			up.projName = ""					#this string is used to store the name of the project
+			up.mainDir = mainDir				#set the main directory the same as the one passed in to the class this is used to store the location of the
+			up.qsfFile = ''						#sting stores the name of the project qsf file
+			up.qpfFileName = "top"				#stores the name of the quartus project file
+			up.qsfFileName = "top.qsf" 			#currently not detected just hard set sotres the name of the quartus setting file
+			up.quipParentDirectory = ''			#This string is used to store the directory a qip file that is beeing parsed is stored in
+			up.testDirName = 'testDirectory'	#this string stores the name of the directory that will be created to test the upgraded project. It needs to be a legal dir name and unique
+			up.cmdOut = ""						#this sting sotres output of the cmd after a comand is run
+		
+			'''****************'''
+			'''*** Commands ***'''
+			'''****************'''
 			#example qextract syntax
 			#"quartus_sh --platform_install -package audio_monitor.par; quartus_sh --platform -name audio_monitor -search_path \."
 			up.extracParCommand = "" # will get filled in when the name is detected
@@ -36,31 +78,15 @@ def updateProcess(mainDir):
 			up.extracParCommand1 = "quartus_sh --platform_install -package "	#part one of the extract command
 			up.extracParCommand2 = "; quartus_sh --platform -name " 			#part two of the extract command
 			up.extracParCommand3 = " -search_path \."							#part three of the extract command
-			up.cmdOut = ""														#this sting sotres output of the cmd after a comand is run
-			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "			#the comand used to complete the blanket upgrade
-			up.fileList = ['platform_setup.tcl', 'filelist.txt']				#this list stores all the files that will be written to the file list.txt used for archiving the project
-			up.qsfFile = ''														#sting stores the name of the project qsf file
-			up.qpfFileName = "top"												#stores the name of the quartus project file
-			up.qsfFileName = "top.qsf" 											#currently not detected just hard set sotres the name of the quartus setting file
-			#list of the tags used in the settings file for files that need to be included in the file list
-			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "USE_SIGNALTAP_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE"]
-			up.foundQip = False													#bool used to flag if there is qip files in the project
-			up.qipList = []														#stores a list of all the qip files. populated after the qsf is parsed
-			up.nestedQuip = False												#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
-			up.directoryList = []												#This list stores every directory in the directory passed to the script
-			up.quipParentDirectory = ''											#This string is used to store the directory a qip file that is beeing parsed is stored in
 			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"	#This string is the archive command used to package the upgraded project
-			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None", ".BAK."}	#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
-			up.testDirName = 'testDirectory'									#this string stores the name of the directory that will be created to test the upgraded project. It needs to be a legal dir name and unique
+			up.updateIpCommand = "quartus_sh --ip_upgrade -mode all "			#the comand used to complete the blanket upgrade
 			up.copyArchiveCommand = "cp upgrade.qar " + up.testDirName + "/upgrade.qar"	#This sting stores the command for coping upgraded archive file to the test directory
 			up.extractArchiveCommand = "quartus_sh --platform -name upgrade.qar"#this string contains the command to extract the archived project created by the script
 			up.compileCommand = "quartus_sh --flow compile top.qpf"				#this string contains the command for compiling the upgraded project in the test directory
-			up.qsysFiles = []													#this bool is used to indicate whether or not a qip file is found in the qsf file.
-			up.qsysFlag = False													#this bool is used to indicate whether or not a qsys file is found in the project directory
-			up.blanketUpGrade = False											#this bool is used to indicate if the blanket upgrade was succeful.
-			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf"]#This list stores all file typs that are possibly documentation or read me file in the project directory.
-			up.masterImageFileTypes = ["sof", "pof", "elf", "iso"]				#***TODO:*** add hex files for memeory configuration
-			
+		
+			'''****************'''
+			'''*** main Def ***'''
+			'''****************'''
 			up.upgradeClassMain()	#call the main def of the class
 			
 		'''
