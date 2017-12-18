@@ -50,7 +50,7 @@ def updateProcess(mainDir):
 			up.directoryList = []												#This list stores every directory in the directory passed to the script
 			up.quipParentDirectory = ''											#This string is used to store the directory a qip file that is beeing parsed is stored in
 			up.archiveComand = "quartus_sh --archive -input filelist.txt -output upgrade.qar"	#This string is the archive command used to package the upgraded project
-			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None"}			#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
+			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None", ".BAK."}	#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
 			up.testDirName = 'testDirectory'
 			up.copyArchiveCommand = "cp upgrade.qar " + up.testDirName + "/upgrade.qar"
 			up.extractArchiveCommand = "quartus_sh --platform -name upgrade.qar"
