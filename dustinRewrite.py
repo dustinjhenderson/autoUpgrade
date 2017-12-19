@@ -918,26 +918,87 @@ def updateProcess(mainDir):
 	runClass = upgradeClass()
 
 	
-def multiUpgrade:
-	print "multi upgrade"
+def multiUpgrade(mainDir):
+	print "Multiple upgrade initiating in: ", mainDir
+	
+	class multipleClass:
+		def __init__(mult):
+			mult.initDirectoryList = []
+			mult.lastSuc = False
+			mult.multMainDef()
+		
+		def multMainDef(mult):
+			mult.getFilesList()
+			mult.removeNonPar()
+			if(len(mult.initDirectoryList) < 1):
+				print "no par files found"
+				return
+			mult.makeDirAndMoveFiles()
+			if(mult.lastSuc == False):
+				return
+			
+		
+		'''
+		* def name:			getFilesList
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def creates a list of all sub directories in the mainDir if there are any
+		* 
+		* dependantcies:	Is populated with the file path the user intends to use.
+		'''
+		def getFilesList(mult):
+			for x in os.listdir('.'):
+				mult.initDirectoryList.append(x)
+		
+		def removeNonPar(mult):
+			for file in mult.initDirectoryList:
+				if(".par" not in file):
+					mult.initDirectoryList.remove(file)
+					
+		def makeDirAndMoveFiles(mult):
+			counter = 0
+			for file in mult.initDirectoryList:
+				try:
+					os.makedirs(re.sub('.par', '', file) + str(counter))
+					os.rename(file, re.sub('.par', '', file) + str(counter) + "/" + file)
+					mult.lastSuc = True
+				except subprocess.CalledProcessError as errorCode:
+					print "Error creating directory for: ", file
+					mult.lastSuc = False
+					return
+				counter = counter + 1
+	
+		def launchUpgrades(mult)
+			
+	
+	runMultClass = multipleClass()
+	
+	
+	
+	
 	
 def main (argv):
 	option_parser = optparse.OptionParser()
 
-	option_parser.set_defaults(upgrade = None)
+	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None)
 	
-	option_parser.add_option("-u", "--single_upgrade", dest="upgrade", action="store",
+	option_parser.add_option("-u", "--single_upgrade", dest="singleUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 	
-	option_parser.add_option("-u", "--multi_upgrade", dest="upgrade", action="store",
+	option_parser.add_option("-m", "--multiple_upgrade", dest="multiUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 		
 	options, args = option_parser.parse_args(argv)
 	
-	if options.upgrade != None:
-		os.chdir(options.upgrade)
-		updateProcess(mainDir = options.upgrade)
-		
+	if options.singleUpgradeOpt != None:
+		os.chdir(options.singleUpgradeOpt)
+		updateProcess(mainDir = options.singleUpgradeOpt)
+	
+	if options.multiUpgradeOpt != None:
+		os.chdir(options.multiUpgradeOpt)
+		multiUpgrade(mainDir = options.multiUpgradeOpt)
+	
 if __name__ == '__main__':
 	running = main(sys.argv)
 	sys.exit(running)
