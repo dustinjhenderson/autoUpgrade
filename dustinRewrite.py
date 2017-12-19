@@ -108,6 +108,13 @@ def updateProcess(mainDir):
 			up.checkDir()
 			if(up.lastSuc == False):
 				return
+			try:
+				logging.debug("def: changing directory to: " + up.mainDir)
+				os.chdir(up.mainDir)
+			except:
+				print "ERROR: changing to the project directory"
+				logging.debug("ERROR: changing directory to: " + up.mainDir)
+				return
 			up.genDirectoryList()
 			up.lastSuc = False
 			up.checkForParQar()
@@ -252,6 +259,7 @@ def updateProcess(mainDir):
 			logging.debug("def: genDirectoryList")
 			for x in os.listdir('.'):
 				up.directoryList.append(x)
+			logging.debug(up.directoryList)
 		
 		#***********************************************
 		#needs some work!
@@ -925,18 +933,22 @@ def multiUpgrade(mainDir):
 		def __init__(mult):
 			mult.initDirectoryList = []
 			mult.lastSuc = False
+			mult.postDirectoryList = []
 			mult.multMainDef()
 		
 		def multMainDef(mult):
+			print "Finding PAR files"
 			mult.getFilesList()
 			mult.removeNonPar()
 			if(len(mult.initDirectoryList) < 1):
 				print "no par files found"
 				return
+			print "Creating folders for projects"
 			mult.makeDirAndMoveFiles()
 			if(mult.lastSuc == False):
 				return
-			
+			print "Launching upgrades"
+			mult.launchUpgrades()
 		
 		'''
 		* def name:			getFilesList
@@ -961,6 +973,7 @@ def multiUpgrade(mainDir):
 			for file in mult.initDirectoryList:
 				try:
 					os.makedirs(re.sub('.par', '', file) + str(counter))
+					mult.postDirectoryList.append(re.sub('.par', '', file) + str(counter))
 					os.rename(file, re.sub('.par', '', file) + str(counter) + "/" + file)
 					mult.lastSuc = True
 				except subprocess.CalledProcessError as errorCode:
@@ -969,8 +982,9 @@ def multiUpgrade(mainDir):
 					return
 				counter = counter + 1
 	
-		def launchUpgrades(mult)
-			
+		def launchUpgrades(mult):
+			for directory in mult.postDirectoryList:
+				updateProcess(mainDir =(mainDir + "/" + directory))
 	
 	runMultClass = multipleClass()
 	
