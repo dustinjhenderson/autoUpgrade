@@ -917,12 +917,19 @@ def updateProcess(mainDir):
 		
 	runClass = upgradeClass()
 
+	
+def multiUpgrade:
+	print "multi upgrade"
+	
 def main (argv):
 	option_parser = optparse.OptionParser()
 
 	option_parser.set_defaults(upgrade = None)
 	
 	option_parser.add_option("-u", "--single_upgrade", dest="upgrade", action="store",
+		help="This option will upgrade all the ip in a project")
+	
+	option_parser.add_option("-u", "--multi_upgrade", dest="upgrade", action="store",
 		help="This option will upgrade all the ip in a project")
 		
 	options, args = option_parser.parse_args(argv)
