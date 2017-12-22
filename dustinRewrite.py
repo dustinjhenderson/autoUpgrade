@@ -180,6 +180,7 @@ def updateProcess(mainDir):
 				up.parsQips()
 				if(up.lastSuc == False):
 					return
+			up.checkForUpgradInEditor()
 			up.checkForReadMe()
 			up.checkFileList()
 			up.lastSuc = False
@@ -724,6 +725,37 @@ def updateProcess(mainDir):
 				else:
 					print ("Failed to find IP file in the directory: " + qipFile)
 					logging.debug("ERROR: Failed to find IP file in the directory: " + qipFile)
+		
+		def checkForUpgradInEditor(up):
+			logging.debug("def: checkForUpgradInEditor")
+			if not up.qipList:
+				logging.debug("no quip files to be checked.")
+				up.lastSuc = True
+				return
+			for file in up.qipList:
+				try:
+					up.parsQuipParent(file)
+					logging.debug("opening file: " + str(file))
+					file = open(file, "r")
+					logging.debug('file opened successfully')
+					for line in file:
+						if("IP_TOOL_VERSION" in line):
+							line = up.parsQipVersion(line)
+							logging.debug("Found QIP version for " + str(file) + " " + str(line))
+					logging.debug('closing qip file')
+					file.close()
+					up.lastSuc = True
+				except:
+					logging.debug("ERROR: failed to open qip file")
+					up.lastSuc = False
+		
+		def parsQipVersion(up, line):
+			line = line[line.find('IP_TOOL_VERSION "')+17:]
+			if('"' in line):
+				line = re.sub('"', '', line)
+			if('\n' in line):
+				line = re.sub('\n', '', line)
+			return line
 		
 		'''
 		* def name:			checkForReadMe
