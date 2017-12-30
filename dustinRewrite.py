@@ -1036,7 +1036,17 @@ def multiUpgrade(mainDir):
 	
 	
 	
-	
+'''
+* def name:			main
+* 
+* creator:			Dustin Henderson
+* 
+* description:		This def recives all arcuments and commands from the comand line and parses
+*					what class to run with the arguments parsed and passed to it. To accomplish
+*					this the def uses the optparse.OptionParser() library from python.
+* 
+* dependantcies:	This def is dependant on the user fallowing the insturctions in the user guide.
+'''
 def main (argv):
 	option_parser = optparse.OptionParser()
 
