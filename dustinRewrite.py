@@ -981,6 +981,18 @@ def multiUpgrade(mainDir):
 			mult.postDirectoryList = []
 			mult.multMainDef()
 		
+		'''
+		* def name:			multMainDef
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def is the main for the multi upgrade prcesses. All of the def calls
+		*					for the multipleClass happen here. Additionally any return logic due to 
+		*					an error take place here.
+		* 
+		* dependantcies:	The only dependantcies for this def is the data sturcture for the class
+		*					that it utilises to call all sub defs.
+		'''
 		def multMainDef(mult):
 			print "Finding PAR files"
 			mult.getFilesList()
@@ -1008,11 +1020,39 @@ def multiUpgrade(mainDir):
 			for x in os.listdir('.'):
 				mult.initDirectoryList.append(x)
 		
+		
+		'''
+		* def name:			removeNonPar
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def iterates all the files found in the mult.initDirectoryList list
+		*					and removes any files that do not end with the .par extention.
+		* 
+		* dependantcies:	This is dependant on the mult.initDirectoryList containing the list of
+		*					all files and or directories in the main directory passed to the class
+		*					by the user arguments.
+		'''
 		def removeNonPar(mult):
 			for file in mult.initDirectoryList:
 				if(".par" not in file):
 					mult.initDirectoryList.remove(file)
-					
+		
+		'''
+		* def name:			makeDirAndMoveFiles
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def moves the par files into individual folders for upgrading.
+		*					To do this the def creates a file with the same name as the par with
+		*					a number after it. Additionally, this def moves the par file into its
+		*					individual file.
+		* 
+		* dependantcies:	This is def is dependant on the mult.initDirectoryList containing only
+		*					par files. Additionally, the user running the script needs to have read
+		*					and write privlages in the main directory passed to the script. Last,
+		*					this def is dependant on using the os python library.
+		'''	
 		def makeDirAndMoveFiles(mult):
 			counter = 0
 			for file in mult.initDirectoryList:
@@ -1027,6 +1067,15 @@ def multiUpgrade(mainDir):
 					return
 				counter = counter + 1
 	
+		'''
+		* def name:			makeDirAndMoveFiles
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def calls the upgrade
+		* 
+		* dependantcies:	This is def
+		'''	
 		def launchUpgrades(mult):
 			for directory in mult.postDirectoryList:
 				updateProcess(mainDir =(mainDir + "/" + directory))
