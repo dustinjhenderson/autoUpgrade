@@ -476,7 +476,7 @@ def updateProcess(mainDir):
 				else:
 					for i in range(len(up.repairQsfLines)):
 						if (re.sub('\n', '', line) != ""):
-							if (re.sub('\n', '', line) in str(up.repairQsfLines[i][0])):
+							if (re.sub('\n', '', line) in str(up.repairQsfLines[i][0])): # #### test changing this in to a ==
 								print "repair line"
 								logging.debug("repair line here")
 								line = str(up.repairQsfLines[i][1]) + "\n"
