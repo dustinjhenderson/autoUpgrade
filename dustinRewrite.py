@@ -51,6 +51,7 @@ def updateProcess(mainDir):
 			up.nestedQuip = False		#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
 			up.qsysFlag = False			#this bool is used to indicate whether or not a qsys file is found in the project directory
 			up.blanketUpGrade = False	#this bool is used to indicate if the blanket upgrade was succeful.
+			up.repairQsfBool = False
 			
 			'''****************'''
 			'''generated lists '''
@@ -59,6 +60,7 @@ def updateProcess(mainDir):
 			up.directoryList = []									#This list stores every directory in the directory passed to the script
 			up.qsysFiles = []										#
 			up.fileList = ['platform_setup.tcl', 'filelist.txt']	#this list stores all the files that will be written to the file list.txt used for archiving the project
+			up.repairQsfLines = [] #2d
 			
 			'''****************'''
 			'''** user lists **'''
@@ -150,7 +152,10 @@ def updateProcess(mainDir):
 			up.openQsfFile()
 			if(up.lastSuc == False):
 				return
+			up.lastSuc = False			
 			up.parsQsf()
+			if(up.lastSuc == False):
+				return
 			up.closeQsfFile()
 			up.lastSuc = False
 			up.openQsfFile()
@@ -179,7 +184,10 @@ def updateProcess(mainDir):
 				up.openQsfFile()
 				if(up.lastSuc == False):
 					return
+				up.lastSuc = False
 				up.parsQsf()
+				if(up.lastSuc == False):
+					return
 				up.closeQsfFile()
 				up.lastSuc = False
 				up.openQsfFile()
@@ -460,8 +468,21 @@ def updateProcess(mainDir):
 			logging.debug("def: createPlatformSetUpFile")
 			file = open('platform_setup.tcl', 'w')
 			file.write('proc ::setup_project {} {\n')
+			for col in up.repairQsfLines:
+				logging.debug("repair 2d list: " + str(col))
 			for line in up.qsfFile:
-				file.write(line)
+				if(up.repairQsfBool == False):
+					file.write(line)
+				else:
+					for i in range(len(up.repairQsfLines)):
+						if (re.sub('\n', '', line) != ""):
+							if (re.sub('\n', '', line) in str(up.repairQsfLines[i][0])):
+								print "repair line"
+								logging.debug("repair line here")
+								line = str(up.repairQsfLines[i][1]) + "\n"
+								#line = re.sub("['", "", line)
+								#line = re.sub("']", "", line)
+					file.write(line)
 			file.write('\n}')
 			file.close()
 		
@@ -484,6 +505,12 @@ def updateProcess(mainDir):
 			for line in up.qsfFile:
 				for fileType in up.filesDictionary:
 					if fileType in line:
+						if(".." in line):
+							logging.debug("WARNNING: Bad QSF syntax found")
+							line = up.repairQsf(line)
+							if(line == False):
+								up.lastSuc = False
+								return
 						line = up.parsFileNameFromQsf(fileType, line)
 						up.fileList.append(line)
 						if(fileType == 'QIP_FILE'):
@@ -496,6 +523,7 @@ def updateProcess(mainDir):
 							up.qsysFiles.append(line) #adde it to qsys list
 						logging.debug("found file: " + line)
 						break
+			up.lastSuc = True
 				
 		'''
 		* def name:			parsFileNameFromQsf
@@ -533,7 +561,56 @@ def updateProcess(mainDir):
 			if '-section_id testBenchTop' in line:
 				line = re.sub(' -section_id testBenchTop', '', line)
 			return line
-			
+		
+		'''
+		* def name:			repairQsf
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def attempts to repair any broken qsf syntax. occationally files will be
+		*					included in the project that are ouside of the project directory. This causes
+		*					a .. infront of the file. However when the project is archived the file is
+		*					is moved into the project directory. After this happens the project will not
+		*					be able to find the file. This def finds the file in the project directory.
+		*					then it fixes the broken line in the qsf.
+		*
+		* dependantcies:	
+		'''	
+		def repairQsf(up, line):
+			logging.debug("def: repairQsf")
+			logging.debug(str(os.getcwd()))
+			outsideFileLocation = ""
+			splitString = []
+			newLine = ""
+			line = re.sub("\n", "", line)
+			splitString = line.split("..")
+			for strings in splitString:
+				logging.debug("split string: " + str(strings))
+			outsideFile = os.path.basename(splitString[len(splitString)-1]) #use the last split string to find the file name to look for
+			logging.debug("outside File: " + str(outsideFile))
+			outsideFileLocation = up.findFile(outsideFile)
+			if outsideFileLocation == False:
+				logging.debug("ERROR: Unable to repair QSF file.")
+				logging.debug("ERROR: File not found: \"" + outsideFile + "\"")
+				return False
+			outsideFileLocation = re.sub("./", "", outsideFileLocation)
+			newLine = splitString[0] + outsideFileLocation
+			logging.debug("old qsf line: \"" + line + "\"")
+			logging.debug("new qsf line: \"" + newLine + "\"")
+			up.repairQsfBool = True
+			up.repairQsfLines.append([line, newLine])
+			return newLine
+		
+		def findFile(up, searchForName):
+			foundLocation = ""
+			for dirpath, dirnames, filenames in os.walk("."):
+				for filename in filenames:
+					if searchForName == filename:
+						foundLocation = os.path.join(dirpath, searchForName)
+						logging.debug("found outside file location: " + str(foundLocation))
+						return foundLocation
+			return False
+		
 		'''
 		* def name:			closeQsfFile
 		* 
