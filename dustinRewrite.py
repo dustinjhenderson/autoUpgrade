@@ -541,25 +541,31 @@ def updateProcess(mainDir):
 			logging.debug("def: parsFileNameFromQsf")
 			#             "set_global_assignment -name SYSTEMVERILOG_FILE "
 			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line) #this line is not working for system verilog
+			#split here 
+			line = line.split("-")[0]
+			line = re.sub(' ', '', line)
+			line = re.sub('/n', '', line)
 			#****************************************
 			#temperary fix
 			#if 'set_global_assignment -name SYSTEMVERILOG_FILE' in line
 			#	line = re.sub('set_global_assignment -name SYSTEMVERILOG_FILE ', '', line)
 			#****************************************
-			if '-tag platfrom' in line:
-				line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
-			if '-tag platform' in line:						#which one shows up is dependant on the
-				line = re.sub(' -tag platform', '', line)	#version your porting from
+			# if '-tag platfrom' in line:
+				# line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
+			# if '-tag platform' in line:						#which one shows up is dependant on the
+				# line = re.sub(' -tag platform', '', line)	#version your porting from
 			if './' in line:
 				line = re.sub('./', '', line)
 			if '.\\' in line:
 				line = re.sub('.\\', '', line)
-			if ' -section_id DSM_tb' in line:
-				line = re.sub(' -section_id DSM_tb', '', line)
-			if '\n' in line:
-				line = re.sub('\n', '', line)
-			if '-section_id testBenchTop' in line:
-				line = re.sub(' -section_id testBenchTop', '', line)
+			# if ' -section_id DSM_tb' in line:
+				# line = re.sub(' -section_id DSM_tb', '', line)
+			# if '\n' in line:
+				# line = re.sub('\n', '', line)
+			# if '-section_id testBenchTop' in line:
+				# line = re.sub(' -section_id testBenchTop', '', line)
+			# if '-section_id test_IOExpander' in line:
+				# line = re.sub(' -section_id test_IOExpander', '', line)
 			return line
 		
 		'''
