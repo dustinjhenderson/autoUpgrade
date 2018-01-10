@@ -13,6 +13,19 @@ import time
 
 print "starting"
 
+
+'''*********************************************************************************************'''
+'''**  Main upgrade class                                                                      *'''
+'''** Description: 	This class is used to upgrade exsisting project from the design store      *'''
+'''** 				archived in a .par extention. Almos all varibles passed from one def to    *'''
+'''**				to another are initialed or instantiated in the ___init___ def of the class*'''
+'''** 				See the developer section of the documentation to see how to edit thes     *'''
+'''** 				varibles to update, change, or fix the functionality of the script*		   *'''
+'''**                                                                                          *'''
+'''** Dependancies: This class is dependant on having the main directory parsed and passed to  *'''
+'''** 				The main directory needs to point to the directory containing the par fill *'''
+'''** 				that needs to be upgraded.												   *'''
+'''*********************************************************************************************'''
 def updateProcess(mainDir):
 	logging.basicConfig(filename=(mainDir+'/LOGOUT.log'),level=logging.DEBUG)
 	logging.debug("------------------------------------------------------------------------------")
@@ -27,7 +40,12 @@ def updateProcess(mainDir):
 			'''****************'''
 			print(mainDir + '/LOGOUT.log')
 			logging.debug("def: main")
-		
+			
+			'''****************'''
+			'''*testing flags *'''
+			'''****************'''
+			up.testingParser = False	#disables extracting par upgrading ip and testing the newly created file if set to to True
+			
 			'''****************'''
 			'''**** flags *****'''
 			'''****************'''
@@ -38,6 +56,7 @@ def updateProcess(mainDir):
 			up.nestedQuip = False		#this bool flags if there is a qip file called in a qip file (currently not supported by the script)
 			up.qsysFlag = False			#this bool is used to indicate whether or not a qsys file is found in the project directory
 			up.blanketUpGrade = False	#this bool is used to indicate if the blanket upgrade was succeful.
+			up.repairQsfBool = False
 			
 			'''****************'''
 			'''generated lists '''
@@ -46,6 +65,7 @@ def updateProcess(mainDir):
 			up.directoryList = []									#This list stores every directory in the directory passed to the script
 			up.qsysFiles = []										#
 			up.fileList = ['platform_setup.tcl', 'filelist.txt']	#this list stores all the files that will be written to the file list.txt used for archiving the project
+			up.repairQsfLines = [] #2d
 			
 			'''****************'''
 			'''** user lists **'''
@@ -108,29 +128,41 @@ def updateProcess(mainDir):
 			up.checkDir()
 			if(up.lastSuc == False):
 				return
+			try:
+				logging.debug("def: changing directory to: " + up.mainDir)
+				os.chdir(up.mainDir)
+			except:
+				print "ERROR: changing to the project directory"
+				logging.debug("ERROR: changing directory to: " + up.mainDir)
+				return
 			up.genDirectoryList()
 			up.lastSuc = False
-			up.checkForParQar()
-			if(up.foundPar == up.foundQpf):
-				print "found multiple projects or none"
-				logging.debug("found multiple projects or none")
-				return
-			if(up.foundPar == True):
-				up.extractPar()
-			if(up.foundQpf == True):
-				print "qpf not supported yet"
-				return
-			if(up.lastSuc == False):
-				return
+			if(up.testingParser == False):
+				up.checkForParQar()
+				if(up.foundPar == up.foundQpf):
+					print "found multiple projects or none"
+					logging.debug("found multiple projects or none")
+					return
+				if(up.foundPar == True):
+					up.extractPar()
+				if(up.foundQpf == True):
+					print "qpf not supported yet"
+					return
+				if(up.lastSuc == False):
+					return
 			up.lastSuc == False
 			print "upgrading IP the easy way (this may take a while)"
-			up.upgradeIp()
+			if(up.testingParser == False):
+				up.upgradeIp()
 			print "building file list"
 			up.lastSuc = False
 			up.openQsfFile()
 			if(up.lastSuc == False):
 				return
+			up.lastSuc = False			
 			up.parsQsf()
+			if(up.lastSuc == False):
+				return
 			up.closeQsfFile()
 			up.lastSuc = False
 			up.openQsfFile()
@@ -145,9 +177,10 @@ def updateProcess(mainDir):
 			if(up.lastSuc == False):
 				return
 			if(up.blanketUpGrade == False):
-				#individually upgrade each ip
-				up.individualFileUpgrade()
-				#clear the file list
+				# individually upgrade each ip
+				if(up.testingParser == False):
+					up.individualFileUpgrade()
+				# clear the file list
 				up.fileList = ['platform_setup.tcl', 'filelist.txt'] 
 				up.foundQip = False
 				up.qipList = []
@@ -159,7 +192,10 @@ def updateProcess(mainDir):
 				up.openQsfFile()
 				if(up.lastSuc == False):
 					return
+				up.lastSuc = False
 				up.parsQsf()
+				if(up.lastSuc == False):
+					return
 				up.closeQsfFile()
 				up.lastSuc = False
 				up.openQsfFile()
@@ -173,6 +209,7 @@ def updateProcess(mainDir):
 				up.parsQips()
 				if(up.lastSuc == False):
 					return
+			up.checkForUpgradInEditor()
 			up.checkForReadMe()
 			up.checkFileList()
 			up.lastSuc = False
@@ -183,29 +220,30 @@ def updateProcess(mainDir):
 			up.archive()
 			if(up.lastSuc == False):
 				return
-			up.lastSuc = False
-			up.createTestDirectory()
-			if(up.lastSuc == False):
-				return
-			up.lastSuc = False
-			up.copyArchive()
-			if(up.lastSuc == False):
-				return
-			try:
-				logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
-				os.chdir(up.mainDir + '/' + up.testDirName)
-			except:
-				logging.debug("ERROR: failed to change working directory to the test directory")
-				print "failed to change working directory to the test directory"
-				return
-			up.lastSuc = False
-			up.extractArchiveFile()
-			if(up.lastSuc == False):
-				return
-			up.lastSuc = False
-			up.compileProject()
-			if(up.lastSuc == False):
-				return
+			if(up.testingParser == False):
+				up.lastSuc = False
+				up.createTestDirectory()
+				if(up.lastSuc == False):
+					return
+				up.lastSuc = False
+				up.copyArchive()
+				if(up.lastSuc == False):
+					return
+				try:
+					logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
+					os.chdir(up.mainDir + '/' + up.testDirName)
+				except:
+					logging.debug("ERROR: failed to change working directory to the test directory")
+					print "failed to change working directory to the test directory"
+					return
+				up.lastSuc = False
+				up.extractArchiveFile()
+				if(up.lastSuc == False):
+					return
+				up.lastSuc = False
+				up.compileProject()
+				if(up.lastSuc == False):
+					return
 			logging.debug("--------------------------------------------------------------------------------------")
 			logging.debug("***                                    Done!                                       ***")
 			logging.debug("***               Upgrade of the project was successfully completed!               ***")
@@ -252,6 +290,7 @@ def updateProcess(mainDir):
 			logging.debug("def: genDirectoryList")
 			for x in os.listdir('.'):
 				up.directoryList.append(x)
+			logging.debug(up.directoryList)
 		
 		#***********************************************
 		#needs some work!
@@ -438,8 +477,20 @@ def updateProcess(mainDir):
 			logging.debug("def: createPlatformSetUpFile")
 			file = open('platform_setup.tcl', 'w')
 			file.write('proc ::setup_project {} {\n')
+			for col in up.repairQsfLines:
+				logging.debug("repair 2d list: " + str(col))
 			for line in up.qsfFile:
-				file.write(line)
+				if(up.repairQsfBool == False):
+					file.write(line)
+				else:
+					for i in range(len(up.repairQsfLines)):
+						if (re.sub('\n', '', line) != ""):
+							if (re.sub('\n', '', line) == str(up.repairQsfLines[i][0])):
+								logging.debug("repair line here")
+								line = str(up.repairQsfLines[i][1]) + "\n"
+								#line = re.sub("['", "", line)
+								#line = re.sub("']", "", line)
+					file.write(line)
 			file.write('\n}')
 			file.close()
 		
@@ -462,6 +513,18 @@ def updateProcess(mainDir):
 			for line in up.qsfFile:
 				for fileType in up.filesDictionary:
 					if fileType in line:
+						excludeBreak = False
+						for exclude in up.excludeDictionary:
+							if (exclude in str(line)):
+								excludeBreak = True
+						if(excludeBreak == True):
+							break
+						if(".." in line):
+							logging.debug("WARNNING: Bad QSF syntax found")
+							line = up.repairQsf(line)
+							if(line == False):
+								up.lastSuc = False
+								return
 						line = up.parsFileNameFromQsf(fileType, line)
 						up.fileList.append(line)
 						if(fileType == 'QIP_FILE'):
@@ -474,6 +537,7 @@ def updateProcess(mainDir):
 							up.qsysFiles.append(line) #adde it to qsys list
 						logging.debug("found file: " + line)
 						break
+			up.lastSuc = True
 				
 		'''
 		* def name:			parsFileNameFromQsf
@@ -489,29 +553,63 @@ def updateProcess(mainDir):
 		'''	
 		def parsFileNameFromQsf(up, fileType, line):
 			logging.debug("def: parsFileNameFromQsf")
-			#             "set_global_assignment -name SYSTEMVERILOG_FILE "
-			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line) #this line is not working for system verilog
-			#****************************************
-			#temperary fix
-			#if 'set_global_assignment -name SYSTEMVERILOG_FILE' in line
-			#	line = re.sub('set_global_assignment -name SYSTEMVERILOG_FILE ', '', line)
-			#****************************************
-			if '-tag platfrom' in line:
-				line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
-			if '-tag platform' in line:						#which one shows up is dependant on the
-				line = re.sub(' -tag platform', '', line)	#version your porting from
-			if './' in line:
-				line = re.sub('./', '', line)
-			if '.\\' in line:
-				line = re.sub('.\\', '', line)
-			if ' -section_id DSM_tb' in line:
-				line = re.sub(' -section_id DSM_tb', '', line)
-			if '\n' in line:
-				line = re.sub('\n', '', line)
-			if '-section_id testBenchTop' in line:
-				line = re.sub(' -section_id testBenchTop', '', line)
+			line = re.sub('\n', '', line)
+			line = line.split(fileType)[1]
+			if("-" in line):
+				line = line.split("-")[0]
+			line = re.sub('\n', '', line)
+			line = re.sub(' ', '', line)
 			return line
-			
+		
+		'''
+		* def name:			repairQsf
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def attempts to repair any broken qsf syntax. occationally files will be
+		*					included in the project that are ouside of the project directory. This causes
+		*					a .. infront of the file. However when the project is archived the file is
+		*					is moved into the project directory. After this happens the project will not
+		*					be able to find the file. This def finds the file in the project directory.
+		*					then it fixes the broken line in the qsf.
+		*
+		* dependantcies:	
+		'''	
+		def repairQsf(up, line):
+			logging.debug("def: repairQsf")
+			logging.debug(str(os.getcwd()))
+			outsideFileLocation = ""
+			splitString = []
+			newLine = ""
+			line = re.sub("\n", "", line)
+			splitString = line.split("..")
+			for strings in splitString:
+				logging.debug("split string: " + str(strings))
+			outsideFile = os.path.basename(splitString[len(splitString)-1]) #use the last split string to find the file name to look for
+			logging.debug("outside File: " + str(outsideFile))
+			outsideFileLocation = up.findFile(outsideFile)
+			if outsideFileLocation == False:
+				logging.debug("ERROR: Unable to repair QSF file.")
+				logging.debug("ERROR: File not found: \"" + outsideFile + "\"")
+				return False
+			outsideFileLocation = re.sub("./", "", outsideFileLocation)
+			newLine = splitString[0] + outsideFileLocation
+			logging.debug("old qsf line: \"" + line + "\"")
+			logging.debug("new qsf line: \"" + newLine + "\"")
+			up.repairQsfBool = True
+			up.repairQsfLines.append([line, newLine])
+			return newLine
+		
+		def findFile(up, searchForName):
+			foundLocation = ""
+			for dirpath, dirnames, filenames in os.walk("."):
+				for filename in filenames:
+					if searchForName == filename:
+						foundLocation = os.path.join(dirpath, searchForName)
+						logging.debug("found outside file location: " + str(foundLocation))
+						return foundLocation
+			return False
+		
 		'''
 		* def name:			closeQsfFile
 		* 
@@ -594,6 +692,13 @@ def updateProcess(mainDir):
 					if fileType in line:
 						line = up.parsFileNameFromQip(fileType, line)
 						line = up.checkForParentDir(line)
+						if ("../" in line):
+							line = os.path.basename(line)
+							line = up.findFile(line)
+							if(line == False):
+								logging.debug("could not find the file in the qip removing it from list")
+								break
+							line = line.lstrip("./")
 						up.fileList.append(line)
 						if(fileType == 'QIP_FILE'):
 							logging.debug("found qip file. qip flag set true")
@@ -634,6 +739,7 @@ def updateProcess(mainDir):
 		'''	
 		def parsFileNameFromQip(up, fileType, line):
 			logging.debug("def: parsFileNameFromQip")
+			line = re.sub("\n", "", line)
 			if(line.find('$::quartus(qip_path)') == -1):
 				line = up.parsFileNameFromQsf(fileType, line)
 			else:
@@ -642,6 +748,8 @@ def updateProcess(mainDir):
 					line = re.sub('"]', '', line)
 				if '\n' in line:
 					line = re.sub('\n', '', line)
+			line = re.sub("\n", "", line)
+			line = re.sub(" ", "", line)
 			return line
 		
 		'''
@@ -716,6 +824,37 @@ def updateProcess(mainDir):
 				else:
 					print ("Failed to find IP file in the directory: " + qipFile)
 					logging.debug("ERROR: Failed to find IP file in the directory: " + qipFile)
+		
+		def checkForUpgradInEditor(up):
+			logging.debug("def: checkForUpgradInEditor")
+			if not up.qipList:
+				logging.debug("no quip files to be checked.")
+				up.lastSuc = True
+				return
+			for file in up.qipList:
+				try:
+					up.parsQuipParent(file)
+					logging.debug("opening file: " + str(file))
+					file = open(file, "r")
+					logging.debug('file opened successfully')
+					for line in file:
+						if("IP_TOOL_VERSION" in line):
+							line = up.parsQipVersion(line)
+							logging.debug("Found QIP version for " + str(file) + " " + str(line))
+					logging.debug('closing qip file')
+					file.close()
+					up.lastSuc = True
+				except:
+					logging.debug("ERROR: failed to open qip file")
+					up.lastSuc = False
+		
+		def parsQipVersion(up, line):
+			line = line[line.find('IP_TOOL_VERSION "')+17:]
+			if('"' in line):
+				line = re.sub('"', '', line)
+			if('\n' in line):
+				line = re.sub('\n', '', line)
+			return line
 		
 		'''
 		* def name:			checkForReadMe
@@ -917,20 +1056,153 @@ def updateProcess(mainDir):
 		
 	runClass = upgradeClass()
 
+	
+def multiUpgrade(mainDir):
+	print "Multiple upgrade initiating in: ", mainDir
+	
+	class multipleClass:
+		def __init__(mult):
+			mult.initDirectoryList = []
+			mult.lastSuc = False
+			mult.postDirectoryList = []
+			mult.multMainDef()
+		
+		'''
+		* def name:			multMainDef
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def is the main for the multi upgrade prcesses. All of the def calls
+		*					for the multipleClass happen here. Additionally any return logic due to 
+		*					an error take place here.
+		* 
+		* dependantcies:	The only dependantcies for this def is the data sturcture for the class
+		*					that it utilises to call all sub defs.
+		'''
+		def multMainDef(mult):
+			print "Finding PAR files"
+			mult.getFilesList()
+			mult.removeNonPar()
+			if(len(mult.initDirectoryList) < 1):
+				print "no par files found"
+				return
+			print "Creating folders for projects"
+			mult.makeDirAndMoveFiles()
+			if(mult.lastSuc == False):
+				return
+			print "Launching upgrades"
+			mult.launchUpgrades()
+		
+		'''
+		* def name:			getFilesList
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def creates a list of all sub directories in the mainDir if there are any
+		* 
+		* dependantcies:	Is populated with the file path the user intends to use.
+		'''
+		def getFilesList(mult):
+			for x in os.listdir('.'):
+				mult.initDirectoryList.append(x)
+		
+		
+		'''
+		* def name:			removeNonPar
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def iterates all the files found in the mult.initDirectoryList list
+		*					and removes any files that do not end with the .par extention.
+		* 
+		* dependantcies:	This is dependant on the mult.initDirectoryList containing the list of
+		*					all files and or directories in the main directory passed to the class
+		*					by the user arguments.
+		'''
+		def removeNonPar(mult):
+			for file in mult.initDirectoryList:
+				if(".par" not in file):
+					mult.initDirectoryList.remove(file)
+		
+		'''
+		* def name:			makeDirAndMoveFiles
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def moves the par files into individual folders for upgrading.
+		*					To do this the def creates a file with the same name as the par with
+		*					a number after it. Additionally, this def moves the par file into its
+		*					individual file.
+		* 
+		* dependantcies:	This is def is dependant on the mult.initDirectoryList containing only
+		*					par files. Additionally, the user running the script needs to have read
+		*					and write privlages in the main directory passed to the script. Last,
+		*					this def is dependant on using the os python library.
+		'''	
+		def makeDirAndMoveFiles(mult):
+			counter = 0
+			for file in mult.initDirectoryList:
+				try:
+					os.makedirs(re.sub('.par', '', file) + str(counter))
+					mult.postDirectoryList.append(re.sub('.par', '', file) + str(counter))
+					os.rename(file, re.sub('.par', '', file) + str(counter) + "/" + file)
+					mult.lastSuc = True
+				except subprocess.CalledProcessError as errorCode:
+					print "Error creating directory for: ", file
+					mult.lastSuc = False
+					return
+				counter = counter + 1
+	
+		'''
+		* def name:			makeDirAndMoveFiles
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def calls the upgrade
+		* 
+		* dependantcies:	This is def
+		'''	
+		def launchUpgrades(mult):
+			for directory in mult.postDirectoryList:
+				updateProcess(mainDir =(mainDir + "/" + directory))
+	
+	runMultClass = multipleClass()
+	
+	
+	
+	
+'''
+* def name:			main
+* 
+* creator:			Dustin Henderson
+* 
+* description:		This def recives all arcuments and commands from the comand line and parses
+*					what class to run with the arguments parsed and passed to it. To accomplish
+*					this the def uses the optparse.OptionParser() library from python.
+* 
+* dependantcies:	This def is dependant on the user fallowing the insturctions in the user guide.
+'''
 def main (argv):
 	option_parser = optparse.OptionParser()
 
-	option_parser.set_defaults(upgrade = None)
+	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None)
 	
-	option_parser.add_option("-u", "--single_upgrade", dest="upgrade", action="store",
+	option_parser.add_option("-u", "--single_upgrade", dest="singleUpgradeOpt", action="store",
+		help="This option will upgrade all the ip in a project")
+	
+	option_parser.add_option("-m", "--multiple_upgrade", dest="multiUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 		
 	options, args = option_parser.parse_args(argv)
 	
-	if options.upgrade != None:
-		os.chdir(options.upgrade)
-		updateProcess(mainDir = options.upgrade)
-		
+	if options.singleUpgradeOpt != None:
+		os.chdir(options.singleUpgradeOpt)
+		updateProcess(mainDir = options.singleUpgradeOpt)
+	
+	if options.multiUpgradeOpt != None:
+		os.chdir(options.multiUpgradeOpt)
+		multiUpgrade(mainDir = options.multiUpgradeOpt)
+	
 if __name__ == '__main__':
 	running = main(sys.argv)
 	sys.exit(running)
