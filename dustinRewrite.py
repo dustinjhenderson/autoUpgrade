@@ -40,7 +40,12 @@ def updateProcess(mainDir):
 			'''****************'''
 			print(mainDir + '/LOGOUT.log')
 			logging.debug("def: main")
-		
+			
+			'''****************'''
+			'''*testing flags *'''
+			'''****************'''
+			up.testingParser = False	#disables extracting par upgrading ip and testing the newly created file if set to to True
+			
 			'''****************'''
 			'''**** flags *****'''
 			'''****************'''
@@ -132,21 +137,23 @@ def updateProcess(mainDir):
 				return
 			up.genDirectoryList()
 			up.lastSuc = False
-			up.checkForParQar()
-			if(up.foundPar == up.foundQpf):
-				print "found multiple projects or none"
-				logging.debug("found multiple projects or none")
-				return
-			if(up.foundPar == True):
-				up.extractPar()
-			if(up.foundQpf == True):
-				print "qpf not supported yet"
-				return
-			if(up.lastSuc == False):
-				return
+			if(up.testingParser == False):
+				up.checkForParQar()
+				if(up.foundPar == up.foundQpf):
+					print "found multiple projects or none"
+					logging.debug("found multiple projects or none")
+					return
+				if(up.foundPar == True):
+					up.extractPar()
+				if(up.foundQpf == True):
+					print "qpf not supported yet"
+					return
+				if(up.lastSuc == False):
+					return
 			up.lastSuc == False
 			print "upgrading IP the easy way (this may take a while)"
-			up.upgradeIp()
+			if(up.testingParser == False):
+				up.upgradeIp()
 			print "building file list"
 			up.lastSuc = False
 			up.openQsfFile()
@@ -170,9 +177,10 @@ def updateProcess(mainDir):
 			if(up.lastSuc == False):
 				return
 			if(up.blanketUpGrade == False):
-				#individually upgrade each ip
-				up.individualFileUpgrade()
-				#clear the file list
+				# individually upgrade each ip
+				if(up.testingParser == False):
+					up.individualFileUpgrade()
+				# clear the file list
 				up.fileList = ['platform_setup.tcl', 'filelist.txt'] 
 				up.foundQip = False
 				up.qipList = []
@@ -212,29 +220,30 @@ def updateProcess(mainDir):
 			up.archive()
 			if(up.lastSuc == False):
 				return
-			up.lastSuc = False
-			up.createTestDirectory()
-			if(up.lastSuc == False):
-				return
-			up.lastSuc = False
-			up.copyArchive()
-			if(up.lastSuc == False):
-				return
-			try:
-				logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
-				os.chdir(up.mainDir + '/' + up.testDirName)
-			except:
-				logging.debug("ERROR: failed to change working directory to the test directory")
-				print "failed to change working directory to the test directory"
-				return
-			up.lastSuc = False
-			up.extractArchiveFile()
-			if(up.lastSuc == False):
-				return
-			up.lastSuc = False
-			up.compileProject()
-			if(up.lastSuc == False):
-				return
+			if(up.testingParser == False):
+				up.lastSuc = False
+				up.createTestDirectory()
+				if(up.lastSuc == False):
+					return
+				up.lastSuc = False
+				up.copyArchive()
+				if(up.lastSuc == False):
+					return
+				try:
+					logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
+					os.chdir(up.mainDir + '/' + up.testDirName)
+				except:
+					logging.debug("ERROR: failed to change working directory to the test directory")
+					print "failed to change working directory to the test directory"
+					return
+				up.lastSuc = False
+				up.extractArchiveFile()
+				if(up.lastSuc == False):
+					return
+				up.lastSuc = False
+				up.compileProject()
+				if(up.lastSuc == False):
+					return
 			logging.debug("--------------------------------------------------------------------------------------")
 			logging.debug("***                                    Done!                                       ***")
 			logging.debug("***               Upgrade of the project was successfully completed!               ***")
@@ -476,8 +485,7 @@ def updateProcess(mainDir):
 				else:
 					for i in range(len(up.repairQsfLines)):
 						if (re.sub('\n', '', line) != ""):
-							if (re.sub('\n', '', line) in str(up.repairQsfLines[i][0])): # #### test changing this in to a ==
-								print "repair line"
+							if (re.sub('\n', '', line) == str(up.repairQsfLines[i][0])):
 								logging.debug("repair line here")
 								line = str(up.repairQsfLines[i][1]) + "\n"
 								#line = re.sub("['", "", line)
@@ -505,6 +513,12 @@ def updateProcess(mainDir):
 			for line in up.qsfFile:
 				for fileType in up.filesDictionary:
 					if fileType in line:
+						excludeBreak = False
+						for exclude in up.excludeDictionary:
+							if (exclude in str(line)):
+								excludeBreak = True
+						if(excludeBreak == True):
+							break
 						if(".." in line):
 							logging.debug("WARNNING: Bad QSF syntax found")
 							line = up.repairQsf(line)
@@ -539,33 +553,12 @@ def updateProcess(mainDir):
 		'''	
 		def parsFileNameFromQsf(up, fileType, line):
 			logging.debug("def: parsFileNameFromQsf")
-			#             "set_global_assignment -name SYSTEMVERILOG_FILE "
-			line = re.sub('set_global_assignment -name ' + fileType + ' ', '', line) #this line is not working for system verilog
-			#split here 
-			line = line.split("-")[0]
+			line = re.sub('\n', '', line)
+			line = line.split(fileType)[1]
+			if("-" in line):
+				line = line.split("-")[0]
+			line = re.sub('\n', '', line)
 			line = re.sub(' ', '', line)
-			line = re.sub('/n', '', line)
-			#****************************************
-			#temperary fix
-			#if 'set_global_assignment -name SYSTEMVERILOG_FILE' in line
-			#	line = re.sub('set_global_assignment -name SYSTEMVERILOG_FILE ', '', line)
-			#****************************************
-			# if '-tag platfrom' in line:
-				# line = re.sub(' -tag platfrom', '', line) 	#you need both platfrom and platform
-			# if '-tag platform' in line:						#which one shows up is dependant on the
-				# line = re.sub(' -tag platform', '', line)	#version your porting from
-			if './' in line:
-				line = re.sub('./', '', line)
-			if '.\\' in line:
-				line = re.sub('.\\', '', line)
-			# if ' -section_id DSM_tb' in line:
-				# line = re.sub(' -section_id DSM_tb', '', line)
-			# if '\n' in line:
-				# line = re.sub('\n', '', line)
-			# if '-section_id testBenchTop' in line:
-				# line = re.sub(' -section_id testBenchTop', '', line)
-			# if '-section_id test_IOExpander' in line:
-				# line = re.sub(' -section_id test_IOExpander', '', line)
 			return line
 		
 		'''
@@ -699,6 +692,13 @@ def updateProcess(mainDir):
 					if fileType in line:
 						line = up.parsFileNameFromQip(fileType, line)
 						line = up.checkForParentDir(line)
+						if ("../" in line):
+							line = os.path.basename(line)
+							line = up.findFile(line)
+							if(line == False):
+								logging.debug("could not find the file in the qip removing it from list")
+								break
+							line = line.lstrip("./")
 						up.fileList.append(line)
 						if(fileType == 'QIP_FILE'):
 							logging.debug("found qip file. qip flag set true")
@@ -739,6 +739,7 @@ def updateProcess(mainDir):
 		'''	
 		def parsFileNameFromQip(up, fileType, line):
 			logging.debug("def: parsFileNameFromQip")
+			line = re.sub("\n", "", line)
 			if(line.find('$::quartus(qip_path)') == -1):
 				line = up.parsFileNameFromQsf(fileType, line)
 			else:
@@ -747,6 +748,8 @@ def updateProcess(mainDir):
 					line = re.sub('"]', '', line)
 				if '\n' in line:
 					line = re.sub('\n', '', line)
+			line = re.sub("\n", "", line)
+			line = re.sub(" ", "", line)
 			return line
 		
 		'''
