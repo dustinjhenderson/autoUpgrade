@@ -26,7 +26,7 @@ print "starting"
 '''** 				The main directory needs to point to the directory containing the par fill *'''
 '''** 				that needs to be upgraded.												   *'''
 '''*********************************************************************************************'''
-def updateProcess(mainDir, packageBool):
+def updateProcess(mainDir, packageBool=False):
 	logging.basicConfig(filename=(mainDir+'/LOGOUT.log'),level=logging.DEBUG)
 	logging.debug("------------------------------------------------------------------------------")
 	logging.debug("def: updateProcess")
@@ -87,6 +87,7 @@ def updateProcess(mainDir, packageBool):
 			'''generated names '''
 			'''****************'''
 			up.projName = ""			#this string is used to store the name of the project
+			up.packageBool = packageBool#sets the package bool
 			up.mainDir = mainDir		#set the main directory the same as the one passed in to the class this is used to store the location of the
 			up.qsfFile = ''				#sting stores the name of the project qsf file
 			up.quipParentDirectory = ''	#This string is used to store the directory a qip file that is beeing parsed is stored in
@@ -137,18 +138,29 @@ def updateProcess(mainDir, packageBool):
 				return
 			up.genDirectoryList()
 			up.lastSuc = False
-			if(up.testingParser == False):
+			if(up.packageBool == False):
+				if(up.testingParser == False):
+					up.checkForParQar()
+					if(up.foundPar == up.foundQpf):
+						print "found multiple projects or none"
+						logging.debug("found multiple projects or none")
+						return
+					if(up.foundPar == True):
+						up.extractPar()
+					if(up.foundQpf == True):
+						print "qpf not supported yet"
+						return
+					if(up.lastSuc == False):
+						return
+			if(up.packageBool == True):
 				up.checkForParQar()
-				if(up.foundPar == up.foundQpf):
-					print "found multiple projects or none"
-					logging.debug("found multiple projects or none")
-					return
-				if(up.foundPar == True):
-					up.extractPar()
 				if(up.foundQpf == True):
-					print "qpf not supported yet"
+					print "Found quartus project"
+					# add logic for pacaging projects here
+					
 					return
-				if(up.lastSuc == False):
+				else:
+					print "Did not find qpf in the project"
 					return
 			up.lastSuc == False
 			print "upgrading IP the easy way (this may take a while)"
@@ -1164,7 +1176,7 @@ def multiUpgrade(mainDir):
 		'''	
 		def launchUpgrades(mult):
 			for directory in mult.postDirectoryList:
-				updateProcess(mainDir =(mainDir + "/" + directory))
+				updateProcess(mainDir =(mainDir + "/" + directory), packageOpt = False)
 	
 	runMultClass = multipleClass()
 	
@@ -1205,11 +1217,12 @@ def main (argv):
 	
 	if options.multiUpgradeOpt != None:
 		os.chdir(options.multiUpgradeOpt)
-		multiUpgrade(mainDir = options.multiUpgradeOpt, packageBool = False)
+		multiUpgrade(mainDir = options.multiUpgradeOpt)
 		exit()
 		
 	if options.packageOpt != None:
 		print "package feature coming soon"
+		updateProcess(mainDir = options.packageOpt, packageBool = True)
 		exit()
 	
 if __name__ == '__main__':
