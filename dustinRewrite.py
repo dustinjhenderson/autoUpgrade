@@ -26,7 +26,7 @@ print "starting"
 '''** 				The main directory needs to point to the directory containing the par fill *'''
 '''** 				that needs to be upgraded.												   *'''
 '''*********************************************************************************************'''
-def updateProcess(mainDir):
+def updateProcess(mainDir, packageBool):
 	logging.basicConfig(filename=(mainDir+'/LOGOUT.log'),level=logging.DEBUG)
 	logging.debug("------------------------------------------------------------------------------")
 	logging.debug("def: updateProcess")
@@ -1185,23 +1185,32 @@ def multiUpgrade(mainDir):
 def main (argv):
 	option_parser = optparse.OptionParser()
 
-	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None)
+	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None, packageOpt = None)
 	
-	option_parser.add_option("-u", "--single_upgrade", dest="singleUpgradeOpt", action="store",
+	option_parser.add_option("-s", "--single_upgrade", dest="singleUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 	
 	option_parser.add_option("-m", "--multiple_upgrade", dest="multiUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 		
+	option_parser.add_option("-p", "--package", dest="packageOpt", action="store",
+		help="This option will package a project into an arcive file that can be uploaded to the design store")
+		
 	options, args = option_parser.parse_args(argv)
 	
 	if options.singleUpgradeOpt != None:
 		os.chdir(options.singleUpgradeOpt)
-		updateProcess(mainDir = options.singleUpgradeOpt)
+		updateProcess(mainDir = options.singleUpgradeOpt, packageBool = False)
+		exit()
 	
 	if options.multiUpgradeOpt != None:
 		os.chdir(options.multiUpgradeOpt)
-		multiUpgrade(mainDir = options.multiUpgradeOpt)
+		multiUpgrade(mainDir = options.multiUpgradeOpt, packageBool = False)
+		exit()
+		
+	if options.packageOpt != None:
+		print "package feature coming soon"
+		exit()
 	
 if __name__ == '__main__':
 	running = main(sys.argv)
