@@ -112,8 +112,110 @@ def updateProcess(mainDir, packageBool=False):
 			'''****************'''
 			'''*** main Def ***'''
 			'''****************'''
-			up.upgradeClassMain()	#call the main def of the class
-			
+			if(packageBool == True):
+				print "Running Packager"
+				up.packagerMain()
+			else:
+				print "Running Upgrade"
+				up.upgradeClassMain()	#call the main def of the class
+		
+		'''
+		* def name:			packagerMain
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This is the main def for packaging projects this def only calls other defs used to package projects.
+		*					no upgrade happens durring this process. The packager works baised off the same parsers that are used
+		*					to find and package the files in the upgrad process.
+		* 
+		* dependantcies:	Dependant on the up data structure containing the defs responcable parsing fils from the project
+		'''
+		def packagerMain(up):
+			up.checkDir()
+			if(up.lastSuc == False):
+				return
+			try:
+				logging.debug("def: changing directory to: " + up.mainDir)
+				os.chdir(up.mainDir)
+			except:
+				print "ERROR: changing to the project directory"
+				logging.debug("ERROR: changing directory to: " + up.mainDir)
+				return
+			up.genDirectoryList()
+			up.lastSuc = False
+			if(up.packageBool == True):
+				up.checkForParQar()
+				if(up.foundQpf == True):
+					print "Found quartus project"
+					print "building file list"
+					up.lastSuc = False
+					up.openQsfFile()
+					if(up.lastSuc == False):
+						return
+					up.lastSuc = False			
+					up.parsQsf()
+					if(up.lastSuc == False):
+						return
+					up.closeQsfFile()
+					up.lastSuc = False
+					up.openQsfFile()
+					if(up.lastSuc == False):
+						return
+					up.createPlatformSetUpFile()
+					up.closeQsfFile()
+					up.findQsysFiles()
+					up.findMasterImage()
+					up.lastSuc = False
+					up.parsQips()
+					if(up.lastSuc == False):
+						return
+					up.checkForReadMe()
+					up.checkFileList()
+					up.lastSuc = False
+					up.generateFileList()
+					if(up.lastSuc == False):
+						return
+					up.lastSuc = False
+					up.archive()
+					if(up.lastSuc == False):
+						return
+					if(up.testingParser == False):
+						up.lastSuc = False
+						up.createTestDirectory()
+						if(up.lastSuc == False):
+							return
+						up.lastSuc = False
+						up.copyArchive()
+						if(up.lastSuc == False):
+							return
+						try:
+							logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
+							os.chdir(up.mainDir + '/' + up.testDirName)
+						except:
+							logging.debug("ERROR: failed to change working directory to the test directory")
+							print "failed to change working directory to the test directory"
+							return
+						up.lastSuc = False
+						up.extractArchiveFile()
+						if(up.lastSuc == False):
+							return
+						up.lastSuc = False
+						up.compileProject()
+						if(up.lastSuc == False):
+							return
+					logging.debug("--------------------------------------------------------------------------------------")
+					logging.debug("***                                    Done!                                       ***")
+					logging.debug("***               Upgrade of the project was successfully completed!               ***")
+					logging.debug("--------------------------------------------------------------------------------------")
+					print "--------------------------------------------------------------------------------------"
+					print "***                                    Done!                                       ***"
+					print "***               Upgrade of the project was successfully completed!               ***"
+					print "--------------------------------------------------------------------------------------"
+					return
+				else:
+					print "Did not find qpf in the project"
+					return
+		
 		'''
 		* def name:			classMain
 		* 
@@ -138,29 +240,18 @@ def updateProcess(mainDir, packageBool=False):
 				return
 			up.genDirectoryList()
 			up.lastSuc = False
-			if(up.packageBool == False):
-				if(up.testingParser == False):
-					up.checkForParQar()
-					if(up.foundPar == up.foundQpf):
-						print "found multiple projects or none"
-						logging.debug("found multiple projects or none")
-						return
-					if(up.foundPar == True):
-						up.extractPar()
-					if(up.foundQpf == True):
-						print "qpf not supported yet"
-						return
-					if(up.lastSuc == False):
-						return
-			if(up.packageBool == True):
+			if(up.testingParser == False):
 				up.checkForParQar()
-				if(up.foundQpf == True):
-					print "Found quartus project"
-					# add logic for pacaging projects here
-					
+				if(up.foundPar == up.foundQpf):
+					print "found multiple projects or none"
+					logging.debug("found multiple projects or none")
 					return
-				else:
-					print "Did not find qpf in the project"
+				if(up.foundPar == True):
+					up.extractPar()
+				if(up.foundQpf == True):
+					print "qpf not supported yet"
+					return
+				if(up.lastSuc == False):
 					return
 			up.lastSuc == False
 			print "upgrading IP the easy way (this may take a while)"
