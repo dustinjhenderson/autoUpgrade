@@ -1267,7 +1267,7 @@ def multiUpgrade(mainDir):
 		'''	
 		def launchUpgrades(mult):
 			for directory in mult.postDirectoryList:
-				updateProcess(mainDir =(mainDir + "/" + directory), packageOpt = False)
+				updateProcess((mainDir + "/" + directory), False)
 	
 	runMultClass = multipleClass()
 	
