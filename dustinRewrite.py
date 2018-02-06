@@ -26,7 +26,7 @@ print "starting"
 '''** 				The main directory needs to point to the directory containing the par fill *'''
 '''** 				that needs to be upgraded.												   *'''
 '''*********************************************************************************************'''
-def updateProcess(mainDir):
+def updateProcess(mainDir, packageBool=False):
 	logging.basicConfig(filename=(mainDir+'/LOGOUT.log'),level=logging.DEBUG)
 	logging.debug("------------------------------------------------------------------------------")
 	logging.debug("def: updateProcess")
@@ -87,6 +87,7 @@ def updateProcess(mainDir):
 			'''generated names '''
 			'''****************'''
 			up.projName = ""			#this string is used to store the name of the project
+			up.packageBool = packageBool#sets the package bool
 			up.mainDir = mainDir		#set the main directory the same as the one passed in to the class this is used to store the location of the
 			up.qsfFile = ''				#sting stores the name of the project qsf file
 			up.quipParentDirectory = ''	#This string is used to store the directory a qip file that is beeing parsed is stored in
@@ -111,8 +112,110 @@ def updateProcess(mainDir):
 			'''****************'''
 			'''*** main Def ***'''
 			'''****************'''
-			up.upgradeClassMain()	#call the main def of the class
-			
+			if(packageBool == True):
+				print "Running Packager"
+				up.packagerMain()
+			else:
+				print "Running Upgrade"
+				up.upgradeClassMain()	#call the main def of the class
+		
+		'''
+		* def name:			packagerMain
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This is the main def for packaging projects this def only calls other defs used to package projects.
+		*					no upgrade happens durring this process. The packager works baised off the same parsers that are used
+		*					to find and package the files in the upgrad process.
+		* 
+		* dependantcies:	Dependant on the up data structure containing the defs responcable parsing fils from the project
+		'''
+		def packagerMain(up):
+			up.checkDir()
+			if(up.lastSuc == False):
+				return
+			try:
+				logging.debug("def: changing directory to: " + up.mainDir)
+				os.chdir(up.mainDir)
+			except:
+				print "ERROR: changing to the project directory"
+				logging.debug("ERROR: changing directory to: " + up.mainDir)
+				return
+			up.genDirectoryList()
+			up.lastSuc = False
+			if(up.packageBool == True):
+				up.checkForParQar()
+				if(up.foundQpf == True):
+					print "Found quartus project"
+					print "building file list"
+					up.lastSuc = False
+					up.openQsfFile()
+					if(up.lastSuc == False):
+						return
+					up.lastSuc = False			
+					up.parsQsf()
+					if(up.lastSuc == False):
+						return
+					up.closeQsfFile()
+					up.lastSuc = False
+					up.openQsfFile()
+					if(up.lastSuc == False):
+						return
+					up.createPlatformSetUpFile()
+					up.closeQsfFile()
+					up.findQsysFiles()
+					up.findMasterImage()
+					up.lastSuc = False
+					up.parsQips()
+					if(up.lastSuc == False):
+						return
+					up.checkForReadMe()
+					up.checkFileList()
+					up.lastSuc = False
+					up.generateFileList()
+					if(up.lastSuc == False):
+						return
+					up.lastSuc = False
+					up.archive()
+					if(up.lastSuc == False):
+						return
+					if(up.testingParser == False):
+						up.lastSuc = False
+						up.createTestDirectory()
+						if(up.lastSuc == False):
+							return
+						up.lastSuc = False
+						up.copyArchive()
+						if(up.lastSuc == False):
+							return
+						try:
+							logging.debug("def: changing directory to: " + up.mainDir + '/' + up.testDirName)
+							os.chdir(up.mainDir + '/' + up.testDirName)
+						except:
+							logging.debug("ERROR: failed to change working directory to the test directory")
+							print "failed to change working directory to the test directory"
+							return
+						up.lastSuc = False
+						up.extractArchiveFile()
+						if(up.lastSuc == False):
+							return
+						up.lastSuc = False
+						up.compileProject()
+						if(up.lastSuc == False):
+							return
+					logging.debug("--------------------------------------------------------------------------------------")
+					logging.debug("***                                    Done!                                       ***")
+					logging.debug("***               Upgrade of the project was successfully completed!               ***")
+					logging.debug("--------------------------------------------------------------------------------------")
+					print "--------------------------------------------------------------------------------------"
+					print "***                                    Done!                                       ***"
+					print "***               Upgrade of the project was successfully completed!               ***"
+					print "--------------------------------------------------------------------------------------"
+					return
+				else:
+					print "Did not find qpf in the project"
+					return
+		
 		'''
 		* def name:			classMain
 		* 
@@ -1164,10 +1267,9 @@ def multiUpgrade(mainDir):
 		'''	
 		def launchUpgrades(mult):
 			for directory in mult.postDirectoryList:
-				updateProcess(mainDir =(mainDir + "/" + directory))
+				updateProcess((mainDir + "/" + directory), False)
 	
 	runMultClass = multipleClass()
-	
 	
 	
 	
@@ -1185,23 +1287,33 @@ def multiUpgrade(mainDir):
 def main (argv):
 	option_parser = optparse.OptionParser()
 
-	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None)
+	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None, packageOpt = None)
 	
-	option_parser.add_option("-u", "--single_upgrade", dest="singleUpgradeOpt", action="store",
+	option_parser.add_option("-s", "--single_upgrade", dest="singleUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 	
 	option_parser.add_option("-m", "--multiple_upgrade", dest="multiUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 		
+	option_parser.add_option("-p", "--package", dest="packageOpt", action="store",
+		help="This option will package a project into an arcive file that can be uploaded to the design store")
+		
 	options, args = option_parser.parse_args(argv)
 	
 	if options.singleUpgradeOpt != None:
 		os.chdir(options.singleUpgradeOpt)
-		updateProcess(mainDir = options.singleUpgradeOpt)
+		updateProcess(mainDir = options.singleUpgradeOpt, packageBool = False)
+		exit()
 	
 	if options.multiUpgradeOpt != None:
 		os.chdir(options.multiUpgradeOpt)
 		multiUpgrade(mainDir = options.multiUpgradeOpt)
+		exit()
+		
+	if options.packageOpt != None:
+		print "package feature coming soon"
+		updateProcess(mainDir = options.packageOpt, packageBool = True)
+		exit()
 	
 if __name__ == '__main__':
 	running = main(sys.argv)
