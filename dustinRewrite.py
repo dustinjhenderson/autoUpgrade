@@ -30,7 +30,11 @@ def updateProcess(mainDir, packageBool=False):
 	logging.basicConfig(filename=(mainDir+'/LOGOUT.log'),level=logging.DEBUG)
 	logging.debug("------------------------------------------------------------------------------")
 	logging.debug("def: updateProcess")
-	print mainDir
+	print "------------------------------------------------------------------------------"
+	print "/t/tSTARTING INFO"
+	print "Main Directory:/t", mainDir
+	quartusVer = subprocess.check_output("which quartus", shell=True)
+	print "Quartus Version:/t", quartusVer
 	
 	class upgradeClass:
 		
@@ -532,10 +536,10 @@ def updateProcess(mainDir, packageBool=False):
 		def upgradeIp(up):
 			logging.debug("def: upgradeIp")
 			try:
-				up.cmdOut = subprocess.check_output((up.updateIpCommand + up.qpfFileName), shell=True)
-				logging.debug("updated IP successfully")
-				print "pdated IP successfully"
-				up.blanketUpGrade = True
+				# up.cmdOut = subprocess.check_output((up.updateIpCommand + up.qpfFileName), shell=True)
+				# logging.debug("updated IP successfully")
+				# print "pdated IP successfully"
+				up.blanketUpGrade = False
 			except subprocess.CalledProcessError as testExcept:
 				logging.debug("WARNNING: upgrading IP with blanket statement will try individual files")
 				logging.debug("WARNNING message: " + str(testExcept))
@@ -703,6 +707,19 @@ def updateProcess(mainDir, packageBool=False):
 			up.repairQsfLines.append([line, newLine])
 			return newLine
 		
+		'''
+		* def name:			findFile
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def searches for a file by name and returns its location with the file name attached. 
+		*					for example if you are looking for a file named pll.v and it finds it in /ip/pll/pll.v 
+		*					the def will return /ip/pll/pll.v
+		*
+		* dependantcies:	This def is dependant on the working directory set to directory you would like to search
+		*					for the file in. Additionally the full name of the file needs to be passed to the function
+		*					Last, this def will only return the first instance of the file it finds.
+		'''	
 		def findFile(up, searchForName):
 			foundLocation = ""
 			for dirpath, dirnames, filenames in os.walk("."):
@@ -887,6 +904,7 @@ def updateProcess(mainDir, packageBool=False):
 						#print "qip  :", re.sub('.qip', '', qipFile)
 						if (os.path.basename(re.sub('.qsys', '', qsysFile)) == os.path.basename(re.sub('.qip', '', qipFile))):
 							#print "match"
+							logging.debug("removing " + qipFile + " from qipList")
 							up.qipList.remove(qipFile)
 						#print "\n"
 				for qsysFile in up.qsysFiles:
@@ -927,6 +945,8 @@ def updateProcess(mainDir, packageBool=False):
 				else:
 					print ("Failed to find IP file in the directory: " + qipFile)
 					logging.debug("ERROR: Failed to find IP file in the directory: " + qipFile)
+			if(failedFlag == True):
+				logging.debug("ERROR: error upgrading IP")
 		
 		def checkForUpgradInEditor(up):
 			logging.debug("def: checkForUpgradInEditor")
@@ -1150,7 +1170,7 @@ def updateProcess(mainDir, packageBool=False):
 				logging.debug("compiling test project")
 				up.cmdOut = subprocess.check_output(up.compileCommand, shell=True)
 				#print up.cmdOut
-				logging.debug(up.cmdOut)
+				#logging.debug(up.cmdOut)
 				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error compiling test project"
