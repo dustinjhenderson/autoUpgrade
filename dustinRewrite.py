@@ -1290,13 +1290,13 @@ def main (argv):
 	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None, packageOpt = None)
 	
 	option_parser.add_option("-s", "--single_upgrade", dest="singleUpgradeOpt", action="store",
-		help="This option will upgrade all the ip in a project")
+		help="This option will upgrade all the ip in a project. Only one par file is allowed to be in the directory")
 	
 	option_parser.add_option("-m", "--multiple_upgrade", dest="multiUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 		
 	option_parser.add_option("-p", "--package", dest="packageOpt", action="store",
-		help="This option will package a project into an arcive file that can be uploaded to the design store")
+		help="This option will package a project into an arcive file that can be uploaded to the design store. Multiple par files are allowed in the file.")
 		
 	options, args = option_parser.parse_args(argv)
 	
