@@ -74,7 +74,7 @@ def updateProcess(mainDir, packageBool=False):
 			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "USE_SIGNALTAP_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE"]
 			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None", ".BAK."}	#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
 			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf", "zip", "tar.gz", "gz"]#This list stores all file typs that are possibly documentation or read me file in the project directory.
-			up.masterImageFileTypes = ["sof", "pof", "elf", "iso", ".hex"]		#***TODO:*** add hex files for memeory configuration
+			up.masterImageFileTypes = ["sof", "pof", "elf", "iso", ".hex", "c"]		#***TODO:*** add hex files for memeory configuration
 		
 			'''****************'''
 			'''** user names **'''
