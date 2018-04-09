@@ -12,7 +12,8 @@ import re
 import time
 
 print "starting"
-
+scriptDir = os.getcwd()
+print "script directory: ", scriptDir
 
 '''*********************************************************************************************'''
 '''**  Main upgrade class                                                                      *'''
@@ -96,7 +97,7 @@ def updateProcess(mainDir, packageBool=False):
 			up.qsfFile = ''				#sting stores the name of the project qsf file
 			up.quipParentDirectory = ''	#This string is used to store the directory a qip file that is beeing parsed is stored in
 			up.cmdOut = ""				#this sting sotres output of the cmd after a comand is run
-		
+
 			'''****************'''
 			'''*** Commands ***'''
 			'''****************'''
@@ -1180,7 +1181,7 @@ def updateProcess(mainDir, packageBool=False):
 	runClass = upgradeClass()
 
 	
-def multiUpgrade(mainDir):
+def multiUpgrade(mainDir, scriptDir):
 	print "Multiple upgrade initiating in: ", mainDir
 	
 	class multipleClass:
@@ -1188,6 +1189,9 @@ def multiUpgrade(mainDir):
 			mult.initDirectoryList = []
 			mult.lastSuc = False
 			mult.postDirectoryList = []
+			mult.scriptDir = scriptDir	#this string stores the location of the python scirpt. This is saved so the script can call upon itself for mulit upgrade.
+			print "script Directory ", mult.scriptDir
+			logging.debug("script Directory " + mult.scriptDir)
 			mult.multMainDef()
 		
 		'''
@@ -1286,8 +1290,14 @@ def multiUpgrade(mainDir):
 		* dependantcies:	This is def
 		'''	
 		def launchUpgrades(mult):
+			cmdOut = ""
 			for directory in mult.postDirectoryList:
-				updateProcess((mainDir + "/" + directory), False)
+				#updateProcess((mainDir + "/" + directory), False)	#old comand that was causing logging problems
+				print "Launching single upgrade on project cound in the multi directory"
+				print "It may take several minutes for the results to print..."
+				print "launch comand: " + "python " + mult.scriptDir + "\\upgradeScript.py --single_upgrade=" + mainDir + "/" + directory
+				cmdOut = subprocess.check_output("python " + mult.scriptDir + "/upgradeScript.py --single_upgrade=" + mainDir + "/" + directory, shell=True)
+				print cmdOut
 	
 	runMultClass = multipleClass()
 	
@@ -1327,7 +1337,7 @@ def main (argv):
 	
 	if options.multiUpgradeOpt != None:
 		os.chdir(options.multiUpgradeOpt)
-		multiUpgrade(mainDir = options.multiUpgradeOpt)
+		multiUpgrade(mainDir = options.multiUpgradeOpt, scriptDir = scriptDir)
 		exit()
 		
 	if options.packageOpt != None:
