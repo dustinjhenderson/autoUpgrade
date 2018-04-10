@@ -12,7 +12,8 @@ import re
 import time
 
 print "starting"
-
+scriptDir = os.getcwd()
+print "script directory: ", scriptDir
 
 '''*********************************************************************************************'''
 '''**  Main upgrade class                                                                      *'''
@@ -30,7 +31,11 @@ def updateProcess(mainDir, packageBool=False):
 	logging.basicConfig(filename=(mainDir+'/LOGOUT.log'),level=logging.DEBUG)
 	logging.debug("------------------------------------------------------------------------------")
 	logging.debug("def: updateProcess")
-	print mainDir
+	print "------------------------------------------------------------------------------"
+	print "/t/tSTARTING INFO"
+	print "Main Directory:/t", mainDir
+	quartusVer = subprocess.check_output("which quartus", shell=True)
+	print "Quartus Version:/t", quartusVer
 	
 	class upgradeClass:
 		
@@ -71,10 +76,10 @@ def updateProcess(mainDir, packageBool=False):
 			'''** user lists **'''
 			'''****************'''
 			#list of the tags used in the settings file for files that need to be included in the file list
-			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "USE_SIGNALTAP_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE"]
+			up.filesDictionary = ["SYSTEMVERILOG_FILE", "QIP_FILE", "SOURCE_FILE", "VHDL_FILE", "SDC_FILE", "VERILOG_FILE", "EDA_TEST_BENCH_FILE", "TCL_SCRIPT_FILE", "QSYS_FILE", "USE_SIGNALTAP_FILE", "SIGNALTAP_FILE", "SLD_FILE", "MISC_FILE", "BDF_FILE"]
 			up.excludeDictionary = {".qprs", ".qsf", ".qpf", "None", ".BAK."}	#This list is all the file typse and strings that are not allowed in the file list. If they are found in the fileList they will be removed.
 			up.nonQuartusFileList = ["txt", "doc", "docx", "xls", "xlsx", "pdf", "zip", "tar.gz", "gz"]#This list stores all file typs that are possibly documentation or read me file in the project directory.
-			up.masterImageFileTypes = ["sof", "pof", "elf", "iso", ".hex", "c", "h"]		#***TODO:*** add hex files for memeory configuration
+			up.masterImageFileTypes = ["sof", "pof", "elf", "iso", ".hex", "c", "cpp", "h", "sdc"]		#***TODO:*** add hex files for memeory configuration
 		
 			'''****************'''
 			'''** user names **'''
@@ -92,7 +97,7 @@ def updateProcess(mainDir, packageBool=False):
 			up.qsfFile = ''				#sting stores the name of the project qsf file
 			up.quipParentDirectory = ''	#This string is used to store the directory a qip file that is beeing parsed is stored in
 			up.cmdOut = ""				#this sting sotres output of the cmd after a comand is run
-		
+
 			'''****************'''
 			'''*** Commands ***'''
 			'''****************'''
@@ -532,10 +537,10 @@ def updateProcess(mainDir, packageBool=False):
 		def upgradeIp(up):
 			logging.debug("def: upgradeIp")
 			try:
-				up.cmdOut = subprocess.check_output((up.updateIpCommand + up.qpfFileName), shell=True)
-				logging.debug("updated IP successfully")
-				print "pdated IP successfully"
-				up.blanketUpGrade = True
+				# up.cmdOut = subprocess.check_output((up.updateIpCommand + up.qpfFileName), shell=True)
+				# logging.debug("updated IP successfully")
+				# print "pdated IP successfully"
+				up.blanketUpGrade = False
 			except subprocess.CalledProcessError as testExcept:
 				logging.debug("WARNNING: upgrading IP with blanket statement will try individual files")
 				logging.debug("WARNNING message: " + str(testExcept))
@@ -703,6 +708,19 @@ def updateProcess(mainDir, packageBool=False):
 			up.repairQsfLines.append([line, newLine])
 			return newLine
 		
+		'''
+		* def name:			findFile
+		* 
+		* creator:			Dustin Henderson
+		* 
+		* description:		This def searches for a file by name and returns its location with the file name attached. 
+		*					for example if you are looking for a file named pll.v and it finds it in /ip/pll/pll.v 
+		*					the def will return /ip/pll/pll.v
+		*
+		* dependantcies:	This def is dependant on the working directory set to directory you would like to search
+		*					for the file in. Additionally the full name of the file needs to be passed to the function
+		*					Last, this def will only return the first instance of the file it finds.
+		'''	
 		def findFile(up, searchForName):
 			foundLocation = ""
 			for dirpath, dirnames, filenames in os.walk("."):
@@ -887,6 +905,7 @@ def updateProcess(mainDir, packageBool=False):
 						#print "qip  :", re.sub('.qip', '', qipFile)
 						if (os.path.basename(re.sub('.qsys', '', qsysFile)) == os.path.basename(re.sub('.qip', '', qipFile))):
 							#print "match"
+							logging.debug("removing " + qipFile + " from qipList")
 							up.qipList.remove(qipFile)
 						#print "\n"
 				for qsysFile in up.qsysFiles:
@@ -927,6 +946,8 @@ def updateProcess(mainDir, packageBool=False):
 				else:
 					print ("Failed to find IP file in the directory: " + qipFile)
 					logging.debug("ERROR: Failed to find IP file in the directory: " + qipFile)
+			if(failedFlag == True):
+				logging.debug("ERROR: error upgrading IP")
 		
 		def checkForUpgradInEditor(up):
 			logging.debug("def: checkForUpgradInEditor")
@@ -1150,7 +1171,7 @@ def updateProcess(mainDir, packageBool=False):
 				logging.debug("compiling test project")
 				up.cmdOut = subprocess.check_output(up.compileCommand, shell=True)
 				#print up.cmdOut
-				logging.debug(up.cmdOut)
+				#logging.debug(up.cmdOut)
 				up.lastSuc = True
 			except subprocess.CalledProcessError as testExcept:
 				print "Error compiling test project"
@@ -1160,7 +1181,7 @@ def updateProcess(mainDir, packageBool=False):
 	runClass = upgradeClass()
 
 	
-def multiUpgrade(mainDir):
+def multiUpgrade(mainDir, scriptDir):
 	print "Multiple upgrade initiating in: ", mainDir
 	
 	class multipleClass:
@@ -1168,6 +1189,9 @@ def multiUpgrade(mainDir):
 			mult.initDirectoryList = []
 			mult.lastSuc = False
 			mult.postDirectoryList = []
+			mult.scriptDir = scriptDir	#this string stores the location of the python scirpt. This is saved so the script can call upon itself for mulit upgrade.
+			print "script Directory ", mult.scriptDir
+			logging.debug("script Directory " + mult.scriptDir)
 			mult.multMainDef()
 		
 		'''
@@ -1266,8 +1290,14 @@ def multiUpgrade(mainDir):
 		* dependantcies:	This is def
 		'''	
 		def launchUpgrades(mult):
+			cmdOut = ""
 			for directory in mult.postDirectoryList:
-				updateProcess((mainDir + "/" + directory), False)
+				#updateProcess((mainDir + "/" + directory), False)	#old comand that was causing logging problems
+				print "Launching single upgrade on project cound in the multi directory"
+				print "It may take several minutes for the results to print..."
+				print "launch comand: " + "python " + mult.scriptDir + "\\upgradeScript.py --single_upgrade=" + mainDir + "/" + directory
+				cmdOut = subprocess.check_output("python " + mult.scriptDir + "/upgradeScript.py --single_upgrade=" + mainDir + "/" + directory, shell=True)
+				print cmdOut
 	
 	runMultClass = multipleClass()
 	
@@ -1290,13 +1320,13 @@ def main (argv):
 	option_parser.set_defaults(singleUpgradeOpt = None, multiUpgradeOpt = None, packageOpt = None)
 	
 	option_parser.add_option("-s", "--single_upgrade", dest="singleUpgradeOpt", action="store",
-		help="This option will upgrade all the ip in a project. Only one par file is allowed to be in the directory")
+		help="This option will upgrade all the ip in a project")
 	
 	option_parser.add_option("-m", "--multiple_upgrade", dest="multiUpgradeOpt", action="store",
 		help="This option will upgrade all the ip in a project")
 		
 	option_parser.add_option("-p", "--package", dest="packageOpt", action="store",
-		help="This option will package a project into an arcive file that can be uploaded to the design store. Multiple par files are allowed in the file.")
+		help="This option will package a project into an arcive file that can be uploaded to the design store")
 		
 	options, args = option_parser.parse_args(argv)
 	
@@ -1307,7 +1337,7 @@ def main (argv):
 	
 	if options.multiUpgradeOpt != None:
 		os.chdir(options.multiUpgradeOpt)
-		multiUpgrade(mainDir = options.multiUpgradeOpt)
+		multiUpgrade(mainDir = options.multiUpgradeOpt, scriptDir = scriptDir)
 		exit()
 		
 	if options.packageOpt != None:
