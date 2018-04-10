@@ -1,4 +1,4 @@
-#design store script rewrite
+#design store automated upgrade script
 print "importing libraries"
 
 import subprocess
