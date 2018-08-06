@@ -643,11 +643,15 @@ def updateProcess(mainDir, packageBool=False):
 							logging.debug("found qsys file in qsf. setting qsys flag to true")
 							up.qsysFlag = True #qsys flag
 							up.qsysFiles.append(line) #adde it to qsys list
-							# Aaron Added
-
-							# End Aaron Added
 						logging.debug("found file: " + line)
 						break
+
+			for file in up.qsysFiles:
+				if "/" in file:
+					file = file.split("/")
+					qsys_file = up.getQsysFiles(file[-1])
+				else:
+					qsys_file = up.getQsysFiles(file)
 			up.lastSuc = True
 				
 		'''
@@ -746,7 +750,71 @@ def updateProcess(mainDir, packageBool=False):
 		def closeQsfFile(up):
 			logging.debug("def: closeQsfFile")
 			up.qsfFile.close()
-		
+
+		'''
+		* def name:			getQsysFiles
+		*
+		* creator:			Aaron Arenas
+		*
+		* description:		This def takes in a qsys file and searches for every file in the
+		*					qsys directory. The result/output is a list with every file's
+		*					filepath with respect to the qsys directory
+		*
+		* dependantcies:	This def is dependant the qsys file and qsys directory existing
+		'''
+
+		def getQsysFiles(up, qsys_filename):
+			logging.debug("Def: getQsysFiles")
+			# qsys_files = []
+			qsys_files_w_path = []
+			qsys_filename_list = qsys_filename.split(".")
+			qsys_dir = qsys_filename_list[0]
+			file_types = []
+			try:
+				# Check if qsys_dir exist
+				if (os.path.isdir(qsys_dir) == False):
+					print "\tQsys file directory doesn't exist: " + qsys_dir
+					logging.debug("\tQsys file directory doesn't exist: " + qsys_dir)
+					return
+			except:
+				print "getQsysFiles failed: qsys directory doesn't exist"
+				return
+
+			try:
+				# Walk inside qsys_dir to search for files
+				for root, directories, filenames in os.walk(qsys_dir):
+					for filename in filenames:
+
+						# Searches for Filetypes inside of qsys_dir
+						# To-do: check which filetypes are needed
+						filename_split_list = filename.split(".")
+						file_type = filename_split_list[1]
+						if not (file_type in file_types):
+							file_types.append(file_type)
+
+						# # Gets filename only inside qsys_dir and subdirectories
+						# qsys_files.append(filename)
+						# print filename
+
+						# # Gets filename with path inside qsys_dir
+						filename_path = os.path.join(root, filename)
+						# qsys_files_w_path.append(filename_path)
+						up.fileList.append(filename_path)
+					# print filename_path
+
+				# # Prints file types (could delete)
+				# print "\nFile Types\n"
+				# for file_type in file_types:
+				# 	print file_type
+				# print "\n"
+
+				# return qsys_files_w_path
+
+			except:
+				print "getQsysFiles failed: Unable to walk in Qsys directory"
+				return
+
+
 		'''
 		* def name:			parsQips
 		* 
@@ -1181,64 +1249,7 @@ def updateProcess(mainDir, packageBool=False):
 				logging.debug("ERROR: compiling test project")
 				up.lastSuc = False
 
-		'''
-		* def name:			getQsysFiles
-		*
-		* creator:			Aaron Arenas
-		*
-		* description:		This def takes in a qsys file and searches for every file in the
-		*					qsys directory. The result/output is a list with every file's
-		*					filepath with respect to the qsys directory
-		*
-		* dependantcies:	This def is dependant the qsys file and qsys directory existing
-		'''
 
-		def getQsysFiles(qsys_filename):
-			# qsys_files = []
-			qsys_files_w_path = []
-			qsys_filename_list = qsys_filename.split(".")
-			qsys_dir = qsys_filename_list[0]
-			file_types = []
-			try:
-				# Check if qsys_dir exist
-				if (os.path.isdir(qsys_dir) == False):
-					print "\tQsys file directory doesn't exist: " + qsys_dir
-					logging.debug("\tQsys file directory doesn't exist: " + qsys_dir)
-					return
-			except:
-				print "getQsysFiles failed: qsys directory doesn't exist"
-				return
-
-			try:
-				# Walk inside qsys_dir to search for files
-				for root, directories, filenames in os.walk(qsys_dir):
-					for filename in filenames:
-
-						# Searches for Filetypes inside of qsys_dir
-						# To-do: check which filetypes are needed
-						filename_split_list = filename.split(".")
-						file_type = filename_split_list[1]
-						if not (file_type in file_types):
-							file_types.append(file_type)
-
-						# # Gets filename only inside qsys_dir and subdirectories
-						# qsys_files.append(filename)
-						# print filename
-
-						# # Gets filename with path inside qsys_dir
-						filename_path = os.path.join(root, filename)
-						qsys_files_w_path.append(filename_path)
-					# print filename_path
-
-				# # Prints file types (could delete)
-				# print "\nFile Types\n"
-				# for file_type in file_types:
-				# 	print file_type
-				# print "\n"
-				return qsys_files_w_path
-			except:
-				print "getQsysFiles failed: Unable to walk in Qsys directory"
-				return
 
 	runClass = upgradeClass()
 
